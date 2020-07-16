@@ -31,7 +31,6 @@ class _JsonData {
 }
 
 class CodeforcesAPI {
-
   Future<ContestList> getAllContests() async {
     // TODO: Looks like we need to handle pagination?!
     return compute(_buildContestList, await _JsonData.load());
