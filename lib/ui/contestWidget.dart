@@ -8,7 +8,10 @@ class ContestWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tile = ListTile(title: Text(contest.name));
+    final tile = ListTile(
+      leading: Text(contest.id.toString()),
+      title: Text(contest.name),
+    );
     return Card(child: Column(mainAxisSize: MainAxisSize.min, children: [tile]));
   }
 }
