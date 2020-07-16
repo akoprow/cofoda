@@ -1,4 +1,4 @@
-import 'package:cofoda/problems.dart';
+import 'package:cofoda/ui/dashboard.dart';
 import 'package:flutter/material.dart';
 
 void main() {
