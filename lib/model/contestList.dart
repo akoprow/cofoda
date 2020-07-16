@@ -6,5 +6,5 @@ class ContestList {
   ContestList({this.contests});
 
   factory ContestList.fromJson(List<dynamic> json) =>
-      ContestList(contests: json.map((json) => Contest.fromJson(json as Map<String, dynamic>)).toList());
+      ContestList(contests: json.map((dynamic json) => Contest.fromJson(json as Map<String, dynamic>)).toList());
 }

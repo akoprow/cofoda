@@ -5,6 +5,9 @@ class Contest {
 
   Contest({this.id, this.name, this.type, this.phase});
 
-  factory Contest.fromJson(Map<String, dynamic> json) =>
-      Contest(id: json['id'], name: json['name'], type: json['type'], phase: json['phase']);
+  factory Contest.fromJson(Map<String, dynamic> json) => Contest(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      type: json['type'] as String,
+      phase: json['phase'] as String);
 }
