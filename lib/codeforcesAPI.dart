@@ -30,14 +30,14 @@ class _JsonData {
   }
 }
 
+ContestList _buildContestList(_JsonData json) {
+  final problems = json.problemsJson.map((dynamic json) => Problem.fromJson(json as Map<String, dynamic>)).toList();
+  return ContestList.fromJson(json.contestsJson.toList(), problems);
+}
+
 class CodeforcesAPI {
   Future<ContestList> getAllContests() async {
     // TODO: Looks like we need to handle pagination?!
     return compute(_buildContestList, await _JsonData.load());
-  }
-
-  ContestList _buildContestList(_JsonData json) {
-    final problems = json.problemsJson.map((dynamic json) => Problem.fromJson(json as Map<String, dynamic>)).toList();
-    return ContestList.fromJson(json.contestsJson, problems);
   }
 }
