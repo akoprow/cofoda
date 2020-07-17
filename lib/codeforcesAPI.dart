@@ -2,24 +2,28 @@ import 'dart:async';
 import 'dart:convert' as convert;
 
 import 'package:cofoda/model/contestList.dart';
-import 'package:cofoda/model/problem.dart';
+import 'package:cofoda/model/problemList.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-class _JsonData {
-  final List<dynamic> problemsJson, contestsJson;
+class Data {
+  final ProblemList problemList;
+  final ContestList contestList;
 
-  _JsonData(this.problemsJson, this.contestsJson);
+  Data(this.problemList, this.contestList);
+}
 
-  static Future<_JsonData> load() async {
-    final problemsResponse = await _fetchFrom('https://codeforces.com/api/problemset.problems');
-    final problemsJson = problemsResponse['result']['problems'] as List<dynamic>;
+Future<List<dynamic>> _loadProblemsJson() async {
+  final problemsResponse = await _fetchFrom('https://codeforces.com/api/problemset.problems');
+    return problemsResponse['result']['problems'] as List<dynamic>;
+}
+
+Future<List<dynamic>> _loadContestsJson() async {
     final contestsResponse = await _fetchFrom('https://codeforces.com/api/contest.list?gym=false');
-    final contestsJson = contestsResponse['result'] as List<dynamic>;
-    return _JsonData(problemsJson, contestsJson);
+    return contestsResponse['result'] as List<dynamic>;
   }
 
-  static Future<Map<String, dynamic>> _fetchFrom(String uri) async {
+Future<Map<String, dynamic>> _fetchFrom(String uri) async {
     final response = await http.get(uri);
     if (response.statusCode == 200) {
       return convert.jsonDecode(response.body) as Map<String, dynamic>;
@@ -28,16 +32,16 @@ class _JsonData {
       return null;
     }
   }
-}
 
-ContestList _buildContestList(_JsonData json) {
-  final problems = json.problemsJson.map((dynamic json) => Problem.fromJson(json as Map<String, dynamic>)).toList();
-  return ContestList.fromJson(json.contestsJson.toList(), problems);
+Future<Data> _loadData(int i) async {
+  final problems = ProblemList.fromJson(await _loadProblemsJson());
+  final contests = ContestList.fromJson(await _loadContestsJson(), problems);
+  return Data(problems, contests);
 }
 
 class CodeforcesAPI {
-  Future<ContestList> getAllContests() async {
+  Future<Data> load() async {
     // TODO: Looks like we need to handle pagination?!
-    return compute(_buildContestList, await _JsonData.load());
+    return compute(_loadData, null);
   }
 }
