@@ -32,6 +32,7 @@ import 'package:flutter/material.dart';
   '#05713c', '#04703b', '#036e3a', '#026c39', '#016a38', '#006837'
 */
 
+const Color _unratedColor = Colors.grey;
 const Map<int, Color> _ratingColors = {
   3500: Color(0xFFA50026),
   3400: Color(0xFFB61127),
@@ -76,7 +77,7 @@ class ProblemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ratingColor = _ratingColors[problem.rating];
+    final ratingColor = problem.rating != null ? _ratingColors[problem.rating] : _unratedColor;
     final textColor = ratingColor.computeLuminance() < 0.5 ? Colors.white : Colors.black;
     final id = Chip(
       label: Text('${problem.contestId}${problem.index}', style: TextStyle(color: textColor)),

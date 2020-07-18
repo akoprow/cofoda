@@ -12,7 +12,7 @@ class Problem implements Comparable<Problem> {
       index: json['index'] as String,
       name: json['name'] as String,
       type: json['type'] as String,
-      rating: json['rating'] as int,
+      rating: json.containsKey('rating') ? json['rating'] as int : null,
       tags: (json['tags'] as List<dynamic>).cast<String>());
 
   @override
