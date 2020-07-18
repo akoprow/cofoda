@@ -23,7 +23,16 @@ class DashboardWidgetState extends State<DashboardWidget> {
 
   Widget _showProblems(Data data) {
     final problems = data.problemList.problems;
-    return Scrollbar(
-        child: ListView.builder(itemCount: problems.length, itemBuilder: (context, i) => ProblemWidget(problems[i])));
+    final problemWidgets = problems.map((problem) => ProblemWidget(problem)).toList();
+    return CustomScrollView(primary: true, slivers: <Widget>[
+      SliverPadding(
+          padding: const EdgeInsets.all(20),
+          sliver: SliverGrid.extent(
+              maxCrossAxisExtent: 400.0,
+              crossAxisSpacing: 5,
+              mainAxisSpacing: 5,
+              childAspectRatio: 4,
+              children: problemWidgets))
+    ]);
   }
 }
