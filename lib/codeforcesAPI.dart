@@ -3,14 +3,16 @@ import 'dart:convert' as convert;
 
 import 'package:cofoda/model/contestList.dart';
 import 'package:cofoda/model/problemList.dart';
+import 'package:cofoda/model/submissions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class Data {
   final ProblemList problemList;
   final ContestList contestList;
+  final AllSubmissions submissions;
 
-  Data(this.problemList, this.contestList);
+  Data(this.problemList, this.contestList, this.submissions);
 }
 
 Future<List<dynamic>> _loadProblemsJson() async {
@@ -21,7 +23,12 @@ Future<List<dynamic>> _loadProblemsJson() async {
 Future<List<dynamic>> _loadContestsJson() async {
     final contestsResponse = await _fetchFrom('https://codeforces.com/api/contest.list?gym=false');
     return contestsResponse['result'] as List<dynamic>;
-  }
+}
+
+Future<List<dynamic>> _loadSubmissionsJson(String user) async {
+  final contestsResponse = await _fetchFrom('https://codeforces.com/api/user.status?handle=$user');
+  return contestsResponse['result'] as List<dynamic>;
+}
 
 Future<Map<String, dynamic>> _fetchFrom(String uri) async {
     final response = await http.get(uri);
@@ -33,15 +40,16 @@ Future<Map<String, dynamic>> _fetchFrom(String uri) async {
     }
   }
 
-Future<Data> _loadData(int i) async {
+Future<Data> _loadData(String user) async {
   final problems = ProblemList.fromJson(await _loadProblemsJson());
   final contests = ContestList.fromJson(await _loadContestsJson(), problems);
-  return Data(problems, contests);
+  final submissions = AllSubmissions.fromJson(await _loadSubmissionsJson(user));
+  return Data(problems, contests, submissions);
 }
 
 class CodeforcesAPI {
-  Future<Data> load() async {
+  Future<Data> load({String user}) async {
     // TODO: Looks like we need to handle pagination?!
-    return compute(_loadData, null);
+    return compute(_loadData, user);
   }
 }

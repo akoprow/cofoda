@@ -10,7 +10,7 @@ class DashboardWidget extends StatefulWidget {
 }
 
 class DashboardWidgetState extends State<DashboardWidget> {
-  final Future<Data> _data = CodeforcesAPI().load();
+  final Future<Data> _data = CodeforcesAPI().load(user: 'koper');
 
   @override
   Widget build(BuildContext context) => showFuture(_data, _showProblems);
@@ -18,12 +18,13 @@ class DashboardWidgetState extends State<DashboardWidget> {
   Widget _showContests(Data data) {
     final contests = data.contestList.contests;
     return Scrollbar(
-        child: ListView.builder(itemCount: contests.length, itemBuilder: (context, i) => ContestWidget(contests[i])));
+        child: ListView.builder(
+            itemCount: contests.length, itemBuilder: (context, i) => ContestWidget(data: data, contest: contests[i])));
   }
 
   Widget _showProblems(Data data) {
     final problems = data.problemList.problems;
-    final problemWidgets = problems.map((problem) => ProblemWidget(problem)).toList();
+    final problemWidgets = problems.map((problem) => ProblemWidget.of(data, problem)).toList();
     return CustomScrollView(primary: true, slivers: <Widget>[
       SliverPadding(
           padding: const EdgeInsets.all(20),

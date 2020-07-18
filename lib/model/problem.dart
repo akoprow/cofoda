@@ -5,6 +5,8 @@ class Problem implements Comparable<Problem> {
 
   Problem({this.contestId, this.index, this.name, this.type, this.rating, this.tags});
 
+  String get id => '$contestId$index';
+
   factory Problem.fromJson(Map<String, dynamic> json) => Problem(
       contestId: json['contestId'] as int,
       index: json['index'] as String,

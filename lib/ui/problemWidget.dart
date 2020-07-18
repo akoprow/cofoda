@@ -1,4 +1,6 @@
+import 'package:cofoda/codeforcesAPI.dart';
 import 'package:cofoda/model/problem.dart';
+import 'package:cofoda/model/submissions.dart';
 import 'package:flutter/material.dart';
 
 /* Rating colors palette:
@@ -63,8 +65,14 @@ const Map<int, Color> _ratingColors = {
 
 class ProblemWidget extends StatelessWidget {
   final Problem problem;
+  final ProblemStatus status;
 
-  ProblemWidget(this.problem);
+  ProblemWidget(this.problem, this.status);
+
+  factory ProblemWidget.of(Data data, Problem problem) {
+    final status = data.submissions.getProblemStatus(problem);
+    return ProblemWidget(problem, status);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +85,21 @@ class ProblemWidget extends StatelessWidget {
     final tagsText = problem.tags.isEmpty ? '' : '(${problem.tags.join(', ')})';
     final tags = Text(tagsText, overflow: TextOverflow.ellipsis);
     final title = Text(problem.name);
-    return Card(child: ListTile(leading: id, title: title, subtitle: tags));
+    return Card(
+      child: ListTile(leading: id, title: title, subtitle: tags),
+      color: _statusToColor(status),
+    );
+  }
+
+  Color _statusToColor(ProblemStatus status) {
+    const int colorIntensity = 100;
+    switch (status) {
+      case ProblemStatus.solved:
+        return Colors.green[colorIntensity];
+      case ProblemStatus.tried:
+        return Colors.yellow[colorIntensity];
+      default:
+        return Colors.white;
+    }
   }
 }
