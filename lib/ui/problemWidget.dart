@@ -70,9 +70,25 @@ class ProblemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final ratingColor = _ratingColors[problem.rating];
     final textColor = ratingColor.computeLuminance() < 0.5 ? Colors.white : Colors.black;
-    return Chip(
-      label: Text(problem.index, style: TextStyle(color: textColor)),
+    final id = Chip(
+      label: Text('${problem.contestId}${problem.index}', style: TextStyle(color: textColor)),
       backgroundColor: ratingColor,
     );
+
+    final numTagElements = 2 * problem.tags.length + 1;
+    final tagFromIndex = (int i) {
+      if (i == 0) {
+        return Text('(');
+      } else if (i == numTagElements - 1) {
+        return Text(')');
+      } else if (i % 2 == 0) {
+        return Text(', ');
+      } else {
+        return Text(problem.tags[(i - 1) ~/ 2]);
+      }
+    };
+    final tags = Row(children: List.generate(2 * problem.tags.length + 1, tagFromIndex));
+    final title = Text(problem.name);
+    return Card(child: ListTile(leading: id, title: title, subtitle: tags));
   }
 }
