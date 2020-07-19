@@ -10,6 +10,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+/*
+TODO:
+- Move grouping code to a separate file
+- Add sorting options
+- Add filtering options
+- Clicking on cards should redirect to problems
+- Problems with no grouping
+- I'm feeling randomly option
+*/
+
 class DashboardWidget extends StatelessWidget {
   final String user;
 
@@ -69,7 +79,6 @@ abstract class Grouper<T> {
   const Grouper();
 
   Set<T> problemGroups(Problem problem);
-
   Group<T> createGroup(T tag, List<Problem> problems, bool Function(Problem problem) filter);
 }
 
@@ -107,15 +116,16 @@ class LoadedDashboardWidget extends StatefulWidget {
 }
 
 class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
-  static const groupper = GroupByRating();
-
+  static const grouper = GroupByRating();
+  static const showEmptyGroups = false;
+  
   List<Group> groups;
   int displayableProblemsNum;
 
   @override
   void initState() {
     super.initState();
-    groups = _computeGroups(widget.data.problemList.problems, groupper);
+    groups = _computeGroups(widget.data.problemList.problems, grouper, showEmptyGroups: showEmptyGroups);
     displayableProblemsNum = widget.data.problemList.problems.where(_getProblemFilter).toList().length;
   }
 
@@ -163,9 +173,12 @@ class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
     }
   }
 
-  List<Group> _computeGroups<T>(List<Problem> problems, Grouper<T> grouper) {
+  List<Group> _computeGroups<T>(List<Problem> problems, Grouper<T> grouper, {bool showEmptyGroups}) {
     final Set<T> tags = problems.map((problem) => grouper.problemGroups(problem)).expand((tags) => tags).toSet();
     final groups = [for (var tag in tags) grouper.createGroup(tag, problems, _getProblemFilter)];
+    if (!showEmptyGroups) {
+      groups.removeWhere((group) => group.displayableProblems.isEmpty);
+    }
     groups.sort();
     return groups;
   }
