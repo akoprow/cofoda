@@ -21,17 +21,17 @@ class DashboardWidget extends StatelessWidget {
 abstract class Group<T> {
   final List<Problem> matchingProblems;
   final List<Problem> displayableProblems;
-  bool isExpanded = true;
+  bool isExpanded;
 
   Group(List<Problem> allProblems, bool Function(Problem) problemFilter, bool Function(Problem) groupMembership)
       : this._fromMatchingProblems(allProblems.where(groupMembership).toList(), problemFilter);
 
-  Group._fromMatchingProblems(this.matchingProblems, bool Function(Problem) problemFilter)
-      : displayableProblems = matchingProblems.where(problemFilter).toList();
+  Group._fromMatchingProblems(List<Problem> matchingProblems, bool Function(Problem) problemFilter)
+      : this._fromProblems(matchingProblems, matchingProblems.where(problemFilter).toList());
 
-  String get _headerBase;
+  Group._fromProblems(this.matchingProblems, this.displayableProblems) : isExpanded = displayableProblems.isNotEmpty;
 
-  String get header => '$_headerBase [${displayableProblems.length} / ${matchingProblems.length}]';
+  String get header;
 }
 
 class GroupByProblemType extends Group<String> implements Comparable<GroupByProblemType> {
@@ -41,7 +41,7 @@ class GroupByProblemType extends Group<String> implements Comparable<GroupByProb
       : super(allProblems, problemFilter, (problem) => problem.tags.contains(_tag));
 
   @override
-  String get _headerBase => _tag;
+  String get header => _tag;
 
   @override
   int compareTo(GroupByProblemType other) {
@@ -69,36 +69,36 @@ class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(child: Container(child: _showAllProblems()));
-  }
-
-  /*
-  Widget _showAllContests(Data data) {
-    final contests = data.contestList.contests;
     return ListView.builder(
-        itemCount: contests.length, itemBuilder: (context, i) => ContestWidget(data: data, contest: contests[i]));
-  }
-  */
-
-  Widget _showAllProblems() {
-    return ExpansionPanelList(
-        expansionCallback: (int index, bool isExpanded) {
-          setState(() {
-            groups[index].isExpanded = !isExpanded;
-          });
-        },
-        children: groups.map(_showGroup).toList());
+      itemCount: 2 * groups.length,
+      itemBuilder: (context, i) => (i % 2 == 0) ? _showGroupHeader(groups[i ~/ 2]) : _showGroupBody(groups[i ~/ 2]),
+    );
   }
 
-  ExpansionPanel _showGroup(Group group) {
-    return ExpansionPanel(
-        headerBuilder: (BuildContext context, bool isExpanded) {
-          return ListTile(
-            title: Text(group.header),
-          );
+  Widget _showGroupHeader(Group group) {
+    return Card(
+      color: group.isExpanded ? Colors.white : Colors.grey[200],
+      child: ListTile(
+        title: Text(group.header),
+        subtitle: Text('[${group.displayableProblems.length} / ${group.matchingProblems.length}]'),
+        trailing: Text(group.isExpanded || group.displayableProblems.isEmpty ? '' : '(click to expand)'),
+        onTap: () {
+          if (group.displayableProblems.isNotEmpty) {
+            setState(() {
+              group.isExpanded = !group.isExpanded;
+            });
+          }
         },
-        body: _showProblems(group.displayableProblems),
-        isExpanded: group.isExpanded);
+      ),
+    );
+  }
+
+  Widget _showGroupBody(Group group) {
+    if (group.isExpanded && group.displayableProblems.isNotEmpty) {
+      return _showProblems(group.displayableProblems);
+    } else {
+      return Container();
+    }
   }
 
   List<Group> _computeGroups(List<Problem> problems) {
