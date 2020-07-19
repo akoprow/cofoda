@@ -7,6 +7,8 @@ import 'package:cofoda/ui/problemWidget.dart';
 import 'package:cofoda/ui/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 
 class DashboardWidget extends StatelessWidget {
   final String user;
@@ -34,19 +36,63 @@ abstract class Group<T> {
   String get header;
 }
 
-class GroupByProblemType extends Group<String> implements Comparable<GroupByProblemType> {
+class ProblemTypeGroup extends Group<String> implements Comparable<ProblemTypeGroup> {
   final String _tag;
 
-  GroupByProblemType(this._tag, List<Problem> allProblems, bool Function(Problem) problemFilter)
+  ProblemTypeGroup(this._tag, List<Problem> allProblems, bool Function(Problem) problemFilter)
       : super(allProblems, problemFilter, (problem) => problem.tags.contains(_tag));
 
   @override
   String get header => _tag;
 
   @override
-  int compareTo(GroupByProblemType other) {
+  int compareTo(ProblemTypeGroup other) {
     return -matchingProblems.length.compareTo(other.matchingProblems.length);
   }
+}
+
+class RatingGroup extends Group<int> implements Comparable<RatingGroup> {
+  final int _rating;
+
+  RatingGroup(this._rating, List<Problem> allProblems, bool Function(Problem) problemFilter)
+      : super(allProblems, problemFilter, (problem) => problem.rating == _rating);
+
+  @override
+  String get header => _rating == null ? 'no rating' : _rating.toString();
+
+  @override
+  int compareTo(RatingGroup other) =>
+      _rating == null ? -1 : other._rating == null ? 1 : -_rating.compareTo(other._rating);
+}
+
+abstract class Grouper<T> {
+  const Grouper();
+
+  Set<T> problemGroups(Problem problem);
+
+  Group<T> createGroup(T tag, List<Problem> problems, bool Function(Problem problem) filter);
+}
+
+class GroupByProblemType extends Grouper<String> {
+  const GroupByProblemType();
+
+  @override
+  Group<String> createGroup(String tag, List<Problem> problems, bool Function(Problem problem) filter) =>
+      ProblemTypeGroup(tag, problems, filter);
+
+  @override
+  Set<String> problemGroups(Problem problem) => problem.tags.toSet();
+}
+
+class GroupByRating extends Grouper<int> {
+  const GroupByRating();
+
+  @override
+  Group<int> createGroup(int tag, List<Problem> problems, bool Function(Problem problem) filter) =>
+      RatingGroup(tag, problems, filter);
+
+  @override
+  Set<int> problemGroups(Problem problem) => {problem.rating};
 }
 
 class LoadedDashboardWidget extends StatefulWidget {
@@ -55,25 +101,40 @@ class LoadedDashboardWidget extends StatefulWidget {
   const LoadedDashboardWidget({Key key, this.data}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => LoadedDashboardWidgetState();
+  State<StatefulWidget> createState() {
+    return LoadedDashboardWidgetState();
+  }
 }
 
 class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
+  static const groupper = GroupByRating();
+
   List<Group> groups;
+  int displayableProblemsNum;
 
   @override
   void initState() {
     super.initState();
-    groups = _computeGroups(widget.data.problemList.problems);
+    groups = _computeGroups(widget.data.problemList.problems, groupper);
+    displayableProblemsNum = widget.data.problemList.problems.where(_getProblemFilter).toList().length;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scrollbar(
+    final explanation = Padding(
+        padding: EdgeInsets.all(10),
+        child: Text(
+          'Showing $displayableProblemsNum / ${widget.data.problemList.problems.length} problems in ${groups
+              .length} groups',
+          textAlign: TextAlign.left,
+        )
+    );
+    final problems = Scrollbar(
         child: ListView.builder(
-      itemCount: 2 * groups.length,
-      itemBuilder: (context, i) => (i % 2 == 0) ? _showGroupHeader(groups[i ~/ 2]) : _showGroupBody(groups[i ~/ 2]),
-    ));
+          itemCount: 2 * groups.length,
+          itemBuilder: (context, i) => (i % 2 == 0) ? _showGroupHeader(groups[i ~/ 2]) : _showGroupBody(groups[i ~/ 2]),
+        ));
+    return Column(children: [explanation, Expanded(child: problems)], crossAxisAlignment: CrossAxisAlignment.start);
   }
 
   Widget _showGroupHeader(Group group) {
@@ -102,9 +163,9 @@ class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
     }
   }
 
-  List<Group> _computeGroups(List<Problem> problems) {
-    final Set<String> tags = problems.map((problem) => problem.tags).expand((tags) => tags).toSet();
-    final groups = [for (var tag in tags) GroupByProblemType(tag, problems, _getProblemFilter)];
+  List<Group> _computeGroups<T>(List<Problem> problems, Grouper<T> grouper) {
+    final Set<T> tags = problems.map((problem) => grouper.problemGroups(problem)).expand((tags) => tags).toSet();
+    final groups = [for (var tag in tags) grouper.createGroup(tag, problems, _getProblemFilter)];
     groups.sort();
     return groups;
   }
