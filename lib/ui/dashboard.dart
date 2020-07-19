@@ -69,10 +69,11 @@ class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return Scrollbar(
+        child: ListView.builder(
       itemCount: 2 * groups.length,
       itemBuilder: (context, i) => (i % 2 == 0) ? _showGroupHeader(groups[i ~/ 2]) : _showGroupBody(groups[i ~/ 2]),
-    );
+    ));
   }
 
   Widget _showGroupHeader(Group group) {
