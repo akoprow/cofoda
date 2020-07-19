@@ -43,7 +43,7 @@ Future<Map<String, dynamic>> _fetchFrom(String uri) async {
 Future<Data> _loadData(String user) async {
   final problems = ProblemList.fromJson(await _loadProblemsJson());
   final contests = ContestList.fromJson(await _loadContestsJson(), problems);
-  final submissions = AllSubmissions.fromJson(await _loadSubmissionsJson(user));
+  final submissions = user == null ? AllSubmissions.empty() : AllSubmissions.fromJson(await _loadSubmissionsJson(user));
   return Data(problems, contests, submissions);
 }
 

@@ -8,17 +8,20 @@ import 'package:cofoda/ui/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class DashboardLoaderWidget extends StatelessWidget {
+class DashboardWidget extends StatelessWidget {
+  final String user;
+
+  DashboardWidget({this.user});
+
   @override
   Widget build(BuildContext context) =>
-      // TODO: Take user from the URL
-      showFuture(CodeforcesAPI().load(user: 'koper'), (Data data) => DashboardWidget(data: data));
+      showFuture(CodeforcesAPI().load(user: user), (Data data) => LoadedDashboardWidget(data: data));
 }
 
 abstract class Group<T> {
   final List<Problem> matchingProblems;
   final List<Problem> displayableProblems;
-  bool isExpanded = false;
+  bool isExpanded = true;
 
   Group(List<Problem> allProblems, bool Function(Problem) problemFilter, bool Function(Problem) groupMembership)
       : this._fromMatchingProblems(allProblems.where(groupMembership).toList(), problemFilter);
@@ -46,16 +49,16 @@ class GroupByProblemType extends Group<String> implements Comparable<GroupByProb
   }
 }
 
-class DashboardWidget extends StatefulWidget {
+class LoadedDashboardWidget extends StatefulWidget {
   final Data data;
 
-  const DashboardWidget({Key key, this.data}) : super(key: key);
+  const LoadedDashboardWidget({Key key, this.data}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => DashboardWidgetState();
+  State<StatefulWidget> createState() => LoadedDashboardWidgetState();
 }
 
-class DashboardWidgetState extends State<DashboardWidget> {
+class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
   List<Group> groups;
 
   @override

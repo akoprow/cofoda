@@ -30,6 +30,8 @@ class AllSubmissions {
     }
   }
 
+  factory AllSubmissions.empty() => AllSubmissions({});
+
   factory AllSubmissions.fromJson(List<dynamic> json) {
     final submissions = json.map((dynamic json) => Submission.fromJson(json as Map<String, dynamic>));
     final problemIds = submissions.map((submission) => submission.problemId).toSet();
