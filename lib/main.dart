@@ -14,6 +14,6 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: Scaffold(appBar: AppBar(title: Text('CoFoDa: CodeForces Dashboard')), body: DashboardWidget()));
+        home: Scaffold(appBar: AppBar(title: Text('CoFoDa: CodeForces Dashboard')), body: DashboardLoaderWidget()));
   }
 }
