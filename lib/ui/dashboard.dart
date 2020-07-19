@@ -31,7 +31,7 @@ abstract class Group<T> {
   String get header => '$_headerBase [${displayableProblems.length} / ${matchingProblems.length}]';
 }
 
-class GroupByProblemType extends Group<String> {
+class GroupByProblemType extends Group<String> implements Comparable<GroupByProblemType> {
   final String _tag;
 
   GroupByProblemType(this._tag, List<Problem> allProblems, bool Function(Problem) problemFilter)
@@ -39,6 +39,11 @@ class GroupByProblemType extends Group<String> {
 
   @override
   String get _headerBase => _tag;
+
+  @override
+  int compareTo(GroupByProblemType other) {
+    return -matchingProblems.length.compareTo(other.matchingProblems.length);
+  }
 }
 
 class DashboardWidget extends StatefulWidget {
@@ -95,7 +100,9 @@ class DashboardWidgetState extends State<DashboardWidget> {
 
   List<Group> _computeGroups(List<Problem> problems) {
     final Set<String> tags = problems.map((problem) => problem.tags).expand((tags) => tags).toSet();
-    return [for (var tag in tags) GroupByProblemType(tag, problems, _getProblemFilter)];
+    final groups = [for (var tag in tags) GroupByProblemType(tag, problems, _getProblemFilter)];
+    groups.sort();
+    return groups;
   }
 
   bool _getProblemFilter(Problem problem) {
