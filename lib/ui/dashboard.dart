@@ -14,10 +14,10 @@ import 'package:flutter/widgets.dart';
 
 /*
 TODO:
+- Getting setup from URL params.
 - I'm feeling randomly option
 - Add filtering options
 - Add sorting options
-- Clicking on cards should redirect to problems
 - Problems with no grouping
 - https://www.buymeacoffee.com/ widget?
 */
