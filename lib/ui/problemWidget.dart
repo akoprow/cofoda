@@ -2,7 +2,6 @@ import 'package:cofoda/codeforcesAPI.dart';
 import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/submissions.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 /* Rating colors palette:
   '#a50026', '#a70226', '#a90426', '#ab0626', '#ad0826', '#af0926', '#b10b26', '#b30d26', '#b50f26', '#b61127',
@@ -91,7 +90,7 @@ class ProblemWidget extends StatelessWidget {
       child: ListTile(leading: id, title: title, subtitle: tags),
       color: _statusToColor(status),
     );
-    return GestureDetector(onTap: () => _goToCodeforces(problem), child: card);
+    return GestureDetector(onTap: () => problem.open(), child: card);
   }
 
   Color _statusToColor(ProblemStatus status) {
@@ -105,7 +104,4 @@ class ProblemWidget extends StatelessWidget {
         return Colors.white;
     }
   }
-
-  Future<void> _goToCodeforces(Problem problem) =>
-      launch('https://codeforces.com/problemset/problem/${problem.contestId}/${problem.index}');
 }

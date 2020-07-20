@@ -15,7 +15,6 @@ import 'package:flutter/widgets.dart';
 /*
 TODO:
 - Getting setup from URL params.
-- I'm feeling randomly option
 - Add filtering options
 - Add sorting options
 - Problems with no grouping
@@ -45,7 +44,7 @@ class LoadedDashboardWidget extends StatefulWidget {
 
 class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
   static const showEmptyGroups = false;
-  
+
   List<Group> groups;
   int displayableProblemsNum;
 
@@ -56,22 +55,29 @@ class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
     displayableProblemsNum = widget.data.problemList.problems.where(_getProblemFilter).toList().length;
   }
 
+  Problem _randomProblem() {
+    final allProblems =
+        groups.map((group) => group.displayableProblems).expand((problems) => problems).toSet().toList();
+    allProblems.shuffle();
+    return allProblems.first;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final explanation = Padding(
-        padding: EdgeInsets.all(10),
-        child: Text(
-          'Showing $displayableProblemsNum / ${widget.data.problemList.problems.length} problems in ${groups
-              .length} groups',
-          textAlign: TextAlign.left,
-        )
+    final randomly = OutlineButton.icon(
+        label: Text("I'm feeling randomly"), onPressed: () => _randomProblem().open(), icon: Icon(Icons.shuffle));
+    final explanation = Text(
+      'Showing $displayableProblemsNum / ${widget.data.problemList.problems.length} problems in ${groups
+          .length} groups',
+      textAlign: TextAlign.left,
     );
+    final topBar = Padding(padding: EdgeInsets.all(10), child: Row(children: [randomly, Spacer(), explanation]));
     final problems = Scrollbar(
         child: ListView.builder(
           itemCount: 2 * groups.length,
           itemBuilder: (context, i) => (i % 2 == 0) ? _showGroupHeader(groups[i ~/ 2]) : _showGroupBody(groups[i ~/ 2]),
         ));
-    return Column(children: [explanation, Expanded(child: problems)], crossAxisAlignment: CrossAxisAlignment.start);
+    return Column(children: [topBar, Expanded(child: problems)], crossAxisAlignment: CrossAxisAlignment.start);
   }
 
   Widget _showGroupHeader(Group group) {

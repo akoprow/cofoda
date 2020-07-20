@@ -1,5 +1,6 @@
 import 'package:cofoda/codeforcesAPI.dart';
 import 'package:cofoda/model/contest.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Problem implements Comparable<Problem> {
   final int contestId, rating;
@@ -22,4 +23,6 @@ class Problem implements Comparable<Problem> {
 
   @override
   int compareTo(Problem other) => index.compareTo(other.index);
+
+  Future<void> open() => launch('https://codeforces.com/problemset/problem/$contestId/$index');
 }
