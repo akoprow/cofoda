@@ -1,6 +1,7 @@
 import 'dart:core';
 
 import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/submissions.dart';
 import 'package:cofoda/ui/grouping.dart';
@@ -13,12 +14,11 @@ import 'package:flutter/widgets.dart';
 
 /*
 TODO:
-- Add grouping by contest
-- Add sorting options
+- I'm feeling randomly option
 - Add filtering options
+- Add sorting options
 - Clicking on cards should redirect to problems
 - Problems with no grouping
-- I'm feeling randomly option
 - https://www.buymeacoffee.com/ widget?
 */
 
@@ -44,7 +44,6 @@ class LoadedDashboardWidget extends StatefulWidget {
 }
 
 class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
-  static const grouper = GroupByRating();
   static const showEmptyGroups = false;
   
   List<Group> groups;
@@ -53,7 +52,7 @@ class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
   @override
   void initState() {
     super.initState();
-    groups = _computeGroups(widget.data.problemList.problems, grouper, showEmptyGroups: showEmptyGroups);
+    groups = _computeGroups(widget.data.problemList.problems, _getProblemGrouper(), showEmptyGroups: showEmptyGroups);
     displayableProblemsNum = widget.data.problemList.problems.where(_getProblemFilter).toList().length;
   }
 
@@ -114,6 +113,8 @@ class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
   bool _getProblemFilter(Problem problem) {
     return widget.data.submissions.getProblemStatus(problem) != ProblemStatus.untried;
   }
+
+  Grouper<Contest> _getProblemGrouper() => GroupByContest(widget.data);
 
   Widget _showProblems(Iterable<Problem> problems) {
     final problemWidgets = problems.map((problem) => ProblemWidget.of(widget.data, problem)).toList();

@@ -1,7 +1,7 @@
 import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/problemList.dart';
 
-class Contest {
+class Contest implements Comparable<Contest> {
   final int id;
   final String name, type, phase;
   final List<Problem> problems;
@@ -17,4 +17,7 @@ class Contest {
         phase: json['phase'] as String,
         problems: problemList.problems.where((problem) => problem.contestId == id).toList());
   }
+
+  @override
+  int compareTo(Contest other) => id?.compareTo(other?.id ?? -1) ?? 1;
 }

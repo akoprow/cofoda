@@ -1,3 +1,5 @@
+import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/problem.dart';
 
 abstract class Group<T> {
@@ -45,6 +47,19 @@ class RatingGroup extends Group<int> implements Comparable<RatingGroup> {
       _rating == null ? -1 : other._rating == null ? 1 : -_rating.compareTo(other._rating);
 }
 
+class ContestGroup extends Group<Contest> implements Comparable<ContestGroup> {
+  final Contest _contest;
+
+  ContestGroup(this._contest, List<Problem> allProblems, bool Function(Problem) problemFilter)
+      : super(allProblems, problemFilter, (problem) => problem.contestId == _contest.id);
+
+  @override
+  String get header => _contest == null ? 'Unknown contest' : _contest.name;
+
+  @override
+  int compareTo(ContestGroup other) => -_contest.compareTo(other._contest);
+}
+
 abstract class Grouper<T> {
   const Grouper();
 
@@ -73,4 +88,17 @@ class GroupByRating extends Grouper<int> {
 
   @override
   Set<int> problemGroups(Problem problem) => {problem.rating};
+}
+
+class GroupByContest extends Grouper<Contest> {
+  final Data _data;
+
+  const GroupByContest(this._data);
+
+  @override
+  Group<Contest> createGroup(Contest contest, List<Problem> problems, bool Function(Problem problem) filter) =>
+      ContestGroup(contest, problems, filter);
+
+  @override
+  Set<Contest> problemGroups(Problem problem) => {problem.getContest(_data)};
 }

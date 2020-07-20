@@ -1,3 +1,6 @@
+import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/model/contest.dart';
+
 class Problem implements Comparable<Problem> {
   final int contestId, rating;
   final String index, name, type;
@@ -14,6 +17,8 @@ class Problem implements Comparable<Problem> {
       type: json['type'] as String,
       rating: json.containsKey('rating') ? json['rating'] as int : null,
       tags: (json['tags'] as List<dynamic>).cast<String>());
+
+  Contest getContest(Data data) => data.contestList.getContestById(contestId);
 
   @override
   int compareTo(Problem other) => index.compareTo(other.index);
