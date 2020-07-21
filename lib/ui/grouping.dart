@@ -1,17 +1,18 @@
 import 'package:cofoda/codeforcesAPI.dart';
 import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/problem.dart';
+import 'package:cofoda/ui/filtering.dart';
 
 abstract class Group<T> {
   final List<Problem> matchingProblems;
   final List<Problem> displayableProblems;
   bool isExpanded;
 
-  Group(List<Problem> allProblems, bool Function(Problem) problemFilter, bool Function(Problem) groupMembership)
+  Group(List<Problem> allProblems, Filter problemFilter, bool Function(Problem) groupMembership)
       : this._fromMatchingProblems(allProblems.where(groupMembership).toList(), problemFilter);
 
-  Group._fromMatchingProblems(List<Problem> matchingProblems, bool Function(Problem) problemFilter)
-      : this._fromProblems(matchingProblems, matchingProblems.where(problemFilter).toList());
+  Group._fromMatchingProblems(List<Problem> matchingProblems, Filter problemFilter)
+      : this._fromProblems(matchingProblems, matchingProblems.where(problemFilter.test).toList());
 
   Group._fromProblems(this.matchingProblems, this.displayableProblems) : isExpanded = displayableProblems.isNotEmpty;
 
@@ -21,7 +22,7 @@ abstract class Group<T> {
 class ProblemTypeGroup extends Group<String> implements Comparable<ProblemTypeGroup> {
   final String _tag;
 
-  ProblemTypeGroup(this._tag, List<Problem> allProblems, bool Function(Problem) problemFilter)
+  ProblemTypeGroup(this._tag, List<Problem> allProblems, Filter problemFilter)
       : super(allProblems, problemFilter, (problem) => problem.tags.contains(_tag));
 
   @override
@@ -36,7 +37,7 @@ class ProblemTypeGroup extends Group<String> implements Comparable<ProblemTypeGr
 class RatingGroup extends Group<int> implements Comparable<RatingGroup> {
   final int _rating;
 
-  RatingGroup(this._rating, List<Problem> allProblems, bool Function(Problem) problemFilter)
+  RatingGroup(this._rating, List<Problem> allProblems, Filter problemFilter)
       : super(allProblems, problemFilter, (problem) => problem.rating == _rating);
 
   @override
@@ -50,7 +51,7 @@ class RatingGroup extends Group<int> implements Comparable<RatingGroup> {
 class ContestGroup extends Group<Contest> implements Comparable<ContestGroup> {
   final Contest _contest;
 
-  ContestGroup(this._contest, List<Problem> allProblems, bool Function(Problem) problemFilter)
+  ContestGroup(this._contest, List<Problem> allProblems, Filter problemFilter)
       : super(allProblems, problemFilter, (problem) => problem.contestId == _contest.id);
 
   @override
@@ -65,14 +66,14 @@ abstract class Grouper<T> {
 
   Set<T> problemGroups(Problem problem);
 
-  Group<T> createGroup(T tag, List<Problem> problems, bool Function(Problem problem) filter);
+  Group<T> createGroup(T tag, List<Problem> problems, Filter filter);
 }
 
 class GroupByProblemType extends Grouper<String> {
   const GroupByProblemType();
 
   @override
-  Group<String> createGroup(String tag, List<Problem> problems, bool Function(Problem problem) filter) =>
+  Group<String> createGroup(String tag, List<Problem> problems, Filter filter) =>
       ProblemTypeGroup(tag, problems, filter);
 
   @override
@@ -83,8 +84,7 @@ class GroupByRating extends Grouper<int> {
   const GroupByRating();
 
   @override
-  Group<int> createGroup(int tag, List<Problem> problems, bool Function(Problem problem) filter) =>
-      RatingGroup(tag, problems, filter);
+  Group<int> createGroup(int tag, List<Problem> problems, Filter filter) => RatingGroup(tag, problems, filter);
 
   @override
   Set<int> problemGroups(Problem problem) => {problem.rating};
@@ -96,7 +96,7 @@ class GroupByContest extends Grouper<Contest> {
   const GroupByContest(this._data);
 
   @override
-  Group<Contest> createGroup(Contest contest, List<Problem> problems, bool Function(Problem problem) filter) =>
+  Group<Contest> createGroup(Contest contest, List<Problem> problems, Filter filter) =>
       ContestGroup(contest, problems, filter);
 
   @override

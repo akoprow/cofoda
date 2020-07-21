@@ -1,9 +1,9 @@
 import 'dart:core';
 
 import 'package:cofoda/codeforcesAPI.dart';
-import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/submissions.dart';
+import 'package:cofoda/ui/filtering.dart';
 import 'package:cofoda/ui/grouping.dart';
 import 'package:cofoda/ui/problemWidget.dart';
 import 'package:cofoda/ui/utils.dart';
@@ -15,7 +15,6 @@ import 'package:flutter/widgets.dart';
 /*
 TODO:
 - Getting setup from URL params.
-- Add filtering options
 - Add sorting options
 - Problems with no grouping
 - https://www.buymeacoffee.com/ widget?
@@ -52,7 +51,7 @@ class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
   void initState() {
     super.initState();
     groups = _computeGroups(widget.data.problemList.problems, _getProblemGrouper(), showEmptyGroups: showEmptyGroups);
-    displayableProblemsNum = widget.data.problemList.problems.where(_getProblemFilter).toList().length;
+    displayableProblemsNum = widget.data.problemList.problems.where(_getProblemFilter().test).toList().length;
   }
 
   Problem _randomProblem() {
@@ -108,7 +107,7 @@ class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
 
   List<Group> _computeGroups<T>(List<Problem> problems, Grouper<T> grouper, {bool showEmptyGroups}) {
     final Set<T> tags = problems.map((problem) => grouper.problemGroups(problem)).expand((tags) => tags).toSet();
-    final groups = [for (var tag in tags) grouper.createGroup(tag, problems, _getProblemFilter)];
+    final groups = [for (var tag in tags) grouper.createGroup(tag, problems, _getProblemFilter())];
     if (!showEmptyGroups) {
       groups.removeWhere((group) => group.displayableProblems.isEmpty);
     }
@@ -116,11 +115,13 @@ class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
     return groups;
   }
 
-  bool _getProblemFilter(Problem problem) {
-    return widget.data.submissions.getProblemStatus(problem) != ProblemStatus.untried;
-  }
+  Filter _getProblemFilter() =>
+      CompositeFilter([
+        FilterByRating(1400, 1600),
+        FilterByStatus(widget.data, {ProblemStatus.untried})
+      ]);
 
-  Grouper<Contest> _getProblemGrouper() => GroupByContest(widget.data);
+  Grouper<String> _getProblemGrouper() => GroupByProblemType();
 
   Widget _showProblems(Iterable<Problem> problems) {
     final problemWidgets = problems.map((problem) => ProblemWidget.of(widget.data, problem)).toList();
