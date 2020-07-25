@@ -19,5 +19,12 @@ class Contest implements Comparable<Contest> {
   }
 
   @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is Contest && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
   int compareTo(Contest other) => id?.compareTo(other?.id ?? -1) ?? 1;
 }

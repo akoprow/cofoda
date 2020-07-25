@@ -1,6 +1,8 @@
 import 'dart:core';
 
 import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/model/contest.dart';
+import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/ui/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,12 +24,36 @@ class ContestsDashboardWidget extends StatelessWidget {
 }
 
 class LoadedContestsDashboardWidget extends StatelessWidget {
-  final Data data;
+  final Data _data;
+  final List<Contest> _contests;
 
-  const LoadedContestsDashboardWidget({Key key, this.data}) : super(key: key);
+  LoadedContestsDashboardWidget({Key key, @required Data data})
+      : _data = data,
+        _contests = data.contestList.allContests,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Text('Coming soon');
+    return Scrollbar(
+        child: ListView.builder(
+      itemCount: _contests.length,
+      itemBuilder: (context, i) => _showContest(_contests[i]),
+    ));
   }
+
+  Widget _showContest(Contest contest) {
+    return Card(
+      child: ListTile(title: Row(children: [Text(contest.name), Spacer()] + _showProblems(contest))),
+    );
+  }
+
+  List<StatelessWidget> _showProblems(Contest contest) {
+    return contest.problems
+        .map(_showProblem)
+        .toList()
+        .reversed
+        .toList();
+  }
+
+  StatelessWidget _showProblem(Problem problem) => Chip(label: Text(problem.index));
 }

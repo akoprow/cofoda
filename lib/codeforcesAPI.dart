@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert' as convert;
 
+import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/contestList.dart';
 import 'package:cofoda/model/problemList.dart';
 import 'package:cofoda/model/submissions.dart';
@@ -13,6 +14,11 @@ class Data {
   final AllSubmissions submissions;
 
   Data(this.problemList, this.contestList, this.submissions);
+
+  List<Contest> allContestsParticipatedIn() {
+    final problems = submissions.submittedProblems;
+    return problems.map((problem) => problem.getContest(this)).toList();
+  }
 }
 
 Future<List<dynamic>> _loadProblemsJson() async {
@@ -48,8 +54,5 @@ Future<Data> _loadData(String user) async {
 }
 
 class CodeforcesAPI {
-  Future<Data> load({String user}) async {
-    // TODO: Looks like we need to handle pagination?!
-    return compute(_loadData, user);
-  }
+  Future<Data> load({String user}) => compute(_loadData, user);
 }

@@ -6,6 +6,8 @@ class ContestList {
 
   ContestList(Iterable<Contest> contestList) : _contests = {for (var contest in contestList) contest.id: contest};
 
+  List<Contest> get allContests => _contests.values.toList();
+
   factory ContestList.fromJson(List<dynamic> json, ProblemList problems) {
     final contests = json
         .map((dynamic json) => Contest.fromJson(json as Map<String, dynamic>, problems))

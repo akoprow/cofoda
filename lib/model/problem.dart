@@ -24,5 +24,12 @@ class Problem implements Comparable<Problem> {
   @override
   int compareTo(Problem other) => index.compareTo(other.index);
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is Problem && runtimeType == other.runtimeType && index == other.index;
+
+  @override
+  int get hashCode => index.hashCode;
+
   Future<void> open() => launch('https://codeforces.com/problemset/problem/$contestId/$index');
 }
