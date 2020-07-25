@@ -1,45 +1,39 @@
-import 'dart:ui';
+import 'dart:math';
 
 import 'package:cofoda/model/problem.dart';
-import 'package:flutter/material.dart';
 
-enum ProblemStatus { solved, tried, untried }
+enum ProblemStatus { untried, tried, solvedPractice, solvedVirtual, solvedLive }
 
-ProblemStatus _betterStatus(ProblemStatus s1, ProblemStatus s2) {
-  if (s1 == ProblemStatus.solved) {
-    return s1;
-  } else if (s2 == ProblemStatus.solved) {
-    return s2;
-  } else if (s1 == ProblemStatus.tried || s2 == ProblemStatus.tried) {
-    return ProblemStatus.tried;
-  } else {
-    return ProblemStatus.untried;
-  }
-}
-
-Color problemStatusToColor(ProblemStatus status) {
-  const int colorIntensity = 100;
-  switch (status) {
-    case ProblemStatus.solved:
-      return Colors.green[colorIntensity];
-    case ProblemStatus.tried:
-      return Colors.yellow[colorIntensity];
-    default:
-      return Colors.white;
-  }
-}
+ProblemStatus _betterStatus(ProblemStatus s1, ProblemStatus s2) => ProblemStatus.values[max(s1.index, s2.index)];
 
 class Submission {
   final Problem problem;
-  final bool solved;
+  final ProblemStatus status;
 
-  Submission({this.problem, this.solved});
-
-  ProblemStatus get status => solved ? ProblemStatus.solved : ProblemStatus.tried;
+  Submission({this.problem, this.status});
 
   factory Submission.fromJson(Map<String, dynamic> json) {
     final problem = Problem.fromJson(json['problem'] as Map<String, dynamic>);
-    return Submission(problem: problem, solved: json['verdict'] == 'OK');
+    return Submission(problem: problem, status: _parseProblemStatus(json));
+  }
+
+  static ProblemStatus _parseProblemStatus(Map<String, dynamic> json) {
+    if (json['verdict'] != 'OK') {
+      return ProblemStatus.tried;
+    } else {
+      final author = json['author'] as Map<String, dynamic>;
+      final participantType = author['participantType'] as String;
+      switch (participantType) {
+        case 'CONTESTANT':
+          return ProblemStatus.solvedLive;
+        case 'VIRTUAL':
+          return ProblemStatus.solvedVirtual;
+        case 'PRACTICE':
+          return ProblemStatus.solvedPractice;
+        default:
+          throw 'Unknown participant type: $participantType';
+      }
+    }
   }
 }
 

@@ -85,8 +85,23 @@ class ProblemWidget extends StatelessWidget {
     final title = Text(problem.name);
     final card = Card(
       child: ListTile(leading: id, title: title, subtitle: tags),
-      color: problemStatusToColor(status),
+      color: _problemStatusToColor(status),
     );
     return GestureDetector(onTap: () => problem.open(), child: card);
+  }
+
+  Color _problemStatusToColor(ProblemStatus status) {
+    switch (status) {
+      case ProblemStatus.solvedLive:
+        return Colors.green[700];
+      case ProblemStatus.solvedVirtual:
+        return Colors.green[400];
+      case ProblemStatus.solvedPractice:
+        return Colors.green[100];
+      case ProblemStatus.tried:
+        return Colors.red[400];
+      default:
+        return Colors.white;
+    }
   }
 }

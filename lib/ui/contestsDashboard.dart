@@ -2,8 +2,7 @@ import 'dart:core';
 
 import 'package:cofoda/codeforcesAPI.dart';
 import 'package:cofoda/model/contest.dart';
-import 'package:cofoda/model/problem.dart';
-import 'package:cofoda/model/submissions.dart';
+import 'package:cofoda/ui/contestWidget.dart';
 import 'package:cofoda/ui/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -38,26 +37,7 @@ class LoadedContestsDashboardWidget extends StatelessWidget {
     return Scrollbar(
         child: ListView.builder(
       itemCount: _contests.length,
-      itemBuilder: (context, i) => _showContest(_contests[i]),
+      itemBuilder: (context, i) => ContestWidget(contest: _contests[i], data: _data),
     ));
   }
-
-  Widget _showContest(Contest contest) {
-    return Card(
-      child: ListTile(title: Row(children: [Text(contest.name), Spacer()] + _showProblems(contest))),
-    );
-  }
-
-  List<StatelessWidget> _showProblems(Contest contest) {
-    return contest.problems
-        .map(_showProblem)
-        .toList()
-        .reversed
-        .toList();
-  }
-
-  StatelessWidget _showProblem(Problem problem) => Chip(
-        label: Text(problem.index),
-        backgroundColor: problemStatusToColor(_data.statusOfProblem(problem)),
-      );
 }
