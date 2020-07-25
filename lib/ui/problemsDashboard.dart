@@ -20,28 +20,28 @@ TODO:
 - https://www.buymeacoffee.com/ widget?
 */
 
-class DashboardWidget extends StatelessWidget {
+class ProblemsDashboardWidget extends StatelessWidget {
   final String user;
 
-  DashboardWidget({this.user});
+  ProblemsDashboardWidget({this.user});
 
   @override
   Widget build(BuildContext context) =>
-      showFuture(CodeforcesAPI().load(user: user), (Data data) => LoadedDashboardWidget(data: data));
+      showFuture(CodeforcesAPI().load(user: user), (Data data) => LoadedProblemsDashboardWidget(data: data));
 }
 
-class LoadedDashboardWidget extends StatefulWidget {
+class LoadedProblemsDashboardWidget extends StatefulWidget {
   final Data data;
 
-  const LoadedDashboardWidget({Key key, this.data}) : super(key: key);
+  const LoadedProblemsDashboardWidget({Key key, this.data}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return LoadedDashboardWidgetState();
+    return LoadedProblemsDashboardWidgetState();
   }
 }
 
-class LoadedDashboardWidgetState extends State<LoadedDashboardWidget> {
+class LoadedProblemsDashboardWidgetState extends State<LoadedProblemsDashboardWidget> {
   static const showEmptyGroups = false;
 
   List<Group> groups;

@@ -1,4 +1,5 @@
-import 'package:cofoda/ui/dashboard.dart';
+import 'package:cofoda/ui/contestsDashboard.dart';
+import 'package:cofoda/ui/problemsDashboard.dart';
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +14,8 @@ class AppComponent extends StatefulWidget {
 
 class AppComponentState extends State<AppComponent> {
   static const String root = '/';
-  static const String dashboard = '/dashboard';
+  static const String problems = '/problems';
+  static const String contests = '/contests';
 
   static const String userQueryParam = 'user';
 
@@ -21,14 +23,20 @@ class AppComponentState extends State<AppComponent> {
 
   AppComponentState() {
     router = Router();
-    router.define(root, handler: _rootHandler());
-    router.define(dashboard, handler: _rootHandler());
+    router.define(root, handler: _problemsHandler());
+    router.define(problems, handler: _problemsHandler());
+    router.define(contests, handler: _contestsHandler());
   }
 
-  Handler _rootHandler() => Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
+  Handler _problemsHandler() => Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
-        print('User: $user');
-        return Page(body: DashboardWidget(user: user));
+        return Page(body: ProblemsDashboardWidget(user: user));
+      });
+
+  Handler _contestsHandler() =>
+      Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
+        final String user = params[userQueryParam]?.first;
+        return Page(body: ContestsDashboardWidget(user: user));
       });
 
   @override
