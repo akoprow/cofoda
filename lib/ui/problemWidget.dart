@@ -3,6 +3,21 @@ import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/submissions.dart';
 import 'package:flutter/material.dart';
 
+Color problemStatusToColor(ProblemStatus status) {
+  switch (status) {
+    case ProblemStatus.solvedLive:
+      return Colors.green[500];
+    case ProblemStatus.solvedVirtual:
+      return Colors.green[300];
+    case ProblemStatus.solvedPractice:
+      return Colors.green[100];
+    case ProblemStatus.tried:
+      return Colors.red[200];
+    default:
+      return Colors.grey[200];
+  }
+}
+
 /* Rating colors palette:
   '#a50026', '#a70226', '#a90426', '#ab0626', '#ad0826', '#af0926', '#b10b26', '#b30d26', '#b50f26', '#b61127',
   '#b81327', '#ba1527', '#bc1727', '#be1927', '#c01b27', '#c21d28', '#c41f28', '#c52128', '#c72328', '#c92529',
@@ -64,6 +79,8 @@ const Map<int, Color> _ratingColors = {
   800: Color(0xFF006837)
 };
 
+Color problemRatingToColor(Problem problem) => problem.rating != null ? _ratingColors[problem.rating] : _unratedColor;
+
 class ProblemWidget extends StatelessWidget {
   final Problem problem;
   final ProblemStatus status;
@@ -74,7 +91,7 @@ class ProblemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ratingColor = problem.rating != null ? _ratingColors[problem.rating] : _unratedColor;
+    final ratingColor = problemRatingToColor(problem);
     final textColor = ratingColor.computeLuminance() < 0.5 ? Colors.white : Colors.black;
     final id = Chip(
       label: Text('${problem.contestId}${problem.index}', style: TextStyle(color: textColor)),
@@ -85,23 +102,8 @@ class ProblemWidget extends StatelessWidget {
     final title = Text(problem.name);
     final card = Card(
       child: ListTile(leading: id, title: title, subtitle: tags),
-      color: _problemStatusToColor(status),
+      color: problemStatusToColor(status),
     );
     return GestureDetector(onTap: () => problem.open(), child: card);
-  }
-
-  Color _problemStatusToColor(ProblemStatus status) {
-    switch (status) {
-      case ProblemStatus.solvedLive:
-        return Colors.green[700];
-      case ProblemStatus.solvedVirtual:
-        return Colors.green[400];
-      case ProblemStatus.solvedPractice:
-        return Colors.green[100];
-      case ProblemStatus.tried:
-        return Colors.red[400];
-      default:
-        return Colors.white;
-    }
   }
 }

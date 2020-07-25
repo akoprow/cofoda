@@ -29,6 +29,7 @@ class Submission {
         case 'VIRTUAL':
           return ProblemStatus.solvedVirtual;
         case 'PRACTICE':
+        case 'OUT_OF_COMPETITION':
           return ProblemStatus.solvedPractice;
         default:
           throw 'Unknown participant type: $participantType';
