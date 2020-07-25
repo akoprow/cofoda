@@ -14,9 +14,9 @@ class ContestWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(title: Row(children: [Text(_contest.name), Spacer()] + _showProblems())),
-    );
+    final contestId = Chip(label: Text('#' + _contest.id.toString()));
+    final contestName = Text('  ' + _contest.name);
+    return Card(child: ListTile(title: Row(children: [contestId, contestName, Spacer()] + _showProblems())));
   }
 
   List<StatelessWidget> _showProblems() {
