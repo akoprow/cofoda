@@ -3,6 +3,7 @@ import 'dart:core';
 import 'package:cofoda/codeforcesAPI.dart';
 import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/problem.dart';
+import 'package:cofoda/model/submissions.dart';
 import 'package:cofoda/ui/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -55,5 +56,8 @@ class LoadedContestsDashboardWidget extends StatelessWidget {
         .toList();
   }
 
-  StatelessWidget _showProblem(Problem problem) => Chip(label: Text(problem.index));
+  StatelessWidget _showProblem(Problem problem) => Chip(
+        label: Text(problem.index),
+        backgroundColor: problemStatusToColor(_data.statusOfProblem(problem)),
+      );
 }

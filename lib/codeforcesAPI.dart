@@ -8,12 +8,16 @@ import 'package:cofoda/model/submissions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import 'model/problem.dart';
+
 class Data {
   final ProblemList problemList;
   final ContestList contestList;
   final AllSubmissions submissions;
 
   Data(this.problemList, this.contestList, this.submissions);
+
+  ProblemStatus statusOfProblem(Problem problem) => submissions.statusOfProblem(problem);
 
   List<Contest> allContestsParticipatedIn() {
     final problems = submissions.submittedProblems;

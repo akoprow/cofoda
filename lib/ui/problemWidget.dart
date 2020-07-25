@@ -70,10 +70,7 @@ class ProblemWidget extends StatelessWidget {
 
   ProblemWidget(this.problem, this.status);
 
-  factory ProblemWidget.of(Data data, Problem problem) {
-    final status = data.submissions.getProblemStatus(problem);
-    return ProblemWidget(problem, status);
-  }
+  factory ProblemWidget.of(Data data, Problem problem) => ProblemWidget(problem, data.statusOfProblem(problem));
 
   @override
   Widget build(BuildContext context) {
@@ -88,20 +85,8 @@ class ProblemWidget extends StatelessWidget {
     final title = Text(problem.name);
     final card = Card(
       child: ListTile(leading: id, title: title, subtitle: tags),
-      color: _statusToColor(status),
+      color: problemStatusToColor(status),
     );
     return GestureDetector(onTap: () => problem.open(), child: card);
-  }
-
-  Color _statusToColor(ProblemStatus status) {
-    const int colorIntensity = 100;
-    switch (status) {
-      case ProblemStatus.solved:
-        return Colors.green[colorIntensity];
-      case ProblemStatus.tried:
-        return Colors.yellow[colorIntensity];
-      default:
-        return Colors.white;
-    }
   }
 }

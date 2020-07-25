@@ -14,7 +14,7 @@ class FilterByRating extends Filter {
   const FilterByRating(this.from, this.to);
 
   @override
-  bool test(Problem problem) => problem.rating >= from && problem.rating <= to;
+  bool test(Problem problem) => problem.rating != null && problem.rating >= from && problem.rating <= to;
 }
 
 class FilterByStatus extends Filter {
@@ -25,8 +25,7 @@ class FilterByStatus extends Filter {
 
   @override
   bool test(Problem problem) {
-    final status = data.submissions.getProblemStatus(problem);
-    return acceptedStatus.contains(status);
+    return acceptedStatus.contains(data.statusOfProblem(problem));
   }
 }
 

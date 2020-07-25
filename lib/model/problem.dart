@@ -22,14 +22,14 @@ class Problem implements Comparable<Problem> {
   Contest getContest(Data data) => data.contestList.getContestById(contestId);
 
   @override
-  int compareTo(Problem other) => index.compareTo(other.index);
+  int compareTo(Problem other) => name.compareTo(other.name);
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is Problem && runtimeType == other.runtimeType && index == other.index;
+      identical(this, other) || other is Problem && runtimeType == other.runtimeType && name == other.name;
 
   @override
-  int get hashCode => index.hashCode;
+  int get hashCode => name.hashCode;
 
   Future<void> open() => launch('https://codeforces.com/problemset/problem/$contestId/$index');
 }
