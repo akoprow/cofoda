@@ -26,8 +26,10 @@ class ProblemsDashboardWidget extends StatelessWidget {
   ProblemsDashboardWidget({this.user});
 
   @override
-  Widget build(BuildContext context) =>
-      showFuture(CodeforcesAPI().load(user: user), (Data data) => LoadedProblemsDashboardWidget(data: data));
+  Widget build(BuildContext context) {
+    final body = showFuture(CodeforcesAPI().load(user: user), (Data data) => LoadedProblemsDashboardWidget(data: data));
+    return Scaffold(appBar: AppBar(title: Text('CoFoDa: CodeForces Dashboard')), body: body);
+  }
 }
 
 class LoadedProblemsDashboardWidget extends StatefulWidget {

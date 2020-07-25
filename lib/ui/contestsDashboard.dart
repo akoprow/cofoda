@@ -34,10 +34,16 @@ class LoadedContestsDashboardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scrollbar(
-        child: ListView.builder(
-      itemCount: _contests.length,
-      itemBuilder: (context, i) => ContestWidget(contest: _contests[i], data: _data),
+    final label = 'displaying all ${_contests.length} contests';
+    final contests = SliverList(
+        delegate: SliverChildBuilderDelegate(
+      (context, i) => ContestWidget(contest: _contests[i], data: _data),
+      childCount: _contests.length,
     ));
+    final appBar = SliverAppBar(
+        expandedHeight: 150.0,
+        floating: true,
+        flexibleSpace: FlexibleSpaceBar(title: Text('Codeforces contests: $label')));
+    return Scaffold(body: CustomScrollView(slivers: [appBar, contests]));
   }
 }

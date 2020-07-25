@@ -30,13 +30,13 @@ class AppComponentState extends State<AppComponent> {
 
   Handler _problemsHandler() => Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
-        return Page(body: ProblemsDashboardWidget(user: user));
+        return ProblemsDashboardWidget(user: user);
       });
 
   Handler _contestsHandler() =>
       Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
-        return Page(body: ContestsDashboardWidget(user: user));
+        return ContestsDashboardWidget(user: user);
       });
 
   @override
@@ -49,14 +49,4 @@ class AppComponentState extends State<AppComponent> {
         ),
         onGenerateRoute: router.generator);
   }
-}
-
-class Page extends StatelessWidget {
-  final Widget body;
-
-  const Page({Key key, this.body}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) =>
-      Scaffold(appBar: AppBar(title: Text('CoFoDa: CodeForces Dashboard')), body: body);
 }
