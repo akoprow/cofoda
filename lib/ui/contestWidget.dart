@@ -1,4 +1,5 @@
 import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/main.dart';
 import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/ui/problemWidget.dart';
@@ -16,7 +17,15 @@ class ContestWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final contestId = Chip(label: Text('#' + _contest.id.toString()));
     final contestName = Text('  ' + _contest.name);
-    return Card(child: ListTile(title: Row(children: [contestId, contestName, Spacer()] + _showProblems())));
+    return Card(
+        child: ListTile(
+            title: Row(children: [contestId, contestName, Spacer()] + _showProblems()),
+            onTap: () => _goToContest(context)));
+  }
+
+  Future<void> _goToContest(BuildContext context) async {
+    final routeName = AppComponentState.routeSingleContestPrefix + _contest.id.toString();
+    return Navigator.pushNamed(context, routeName);
   }
 
   List<StatelessWidget> _showProblems() {
