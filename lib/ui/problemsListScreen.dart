@@ -126,7 +126,7 @@ class LoadedProblemsListWidgetState extends State<LoadedProblemsListWidget> {
   Grouper<String> _getProblemGrouper() => GroupByProblemType();
 
   Widget _showProblems(Iterable<Problem> problems) {
-    final problemWidgets = problems.map((problem) => ProblemWidget.of(widget.data, problem)).toList();
+    final problemWidgets = problems.map((problem) => ProblemWidget(widget.data, problem)).toList();
     return Padding(
         padding: EdgeInsets.all(10),
         child: GridView.extent(

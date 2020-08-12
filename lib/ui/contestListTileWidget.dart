@@ -8,9 +8,11 @@ import 'package:flutter/material.dart';
 class ContestListTileWidget extends StatelessWidget {
   final Contest _contest;
   final Data _data;
+  final int _ratingLimit;
 
-  ContestListTileWidget({Contest contest, Data data})
+  ContestListTileWidget({Contest contest, Data data, int ratingLimit})
       : _data = data,
+        _ratingLimit = ratingLimit,
         _contest = contest;
 
   @override
@@ -35,7 +37,7 @@ class ContestListTileWidget extends StatelessWidget {
   StatelessWidget _showProblem(Problem problem) {
     final card = Chip(
       label: Text(problem.index),
-      backgroundColor: problemStatusToColor(_data.statusOfProblem(problem)),
+      backgroundColor: problemStatusToColor(_data, problem, ratingLimit: _ratingLimit),
     );
     return GestureDetector(onTap: () => problem.open(), child: card);
   }
