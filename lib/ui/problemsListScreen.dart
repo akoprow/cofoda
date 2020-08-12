@@ -20,30 +20,30 @@ TODO:
 - https://www.buymeacoffee.com/ widget?
 */
 
-class ProblemsDashboardWidget extends StatelessWidget {
+class ProblemsListScreenWidget extends StatelessWidget {
   final String user;
 
-  ProblemsDashboardWidget({this.user});
+  ProblemsListScreenWidget({this.user});
 
   @override
   Widget build(BuildContext context) {
-    final body = showFuture(CodeforcesAPI().load(user: user), (Data data) => LoadedProblemsDashboardWidget(data: data));
+    final body = showFuture(CodeforcesAPI().load(user: user), (Data data) => LoadedProblemsListWidget(data: data));
     return Scaffold(appBar: AppBar(title: Text('CoFoDa: CodeForces Dashboard')), body: body);
   }
 }
 
-class LoadedProblemsDashboardWidget extends StatefulWidget {
+class LoadedProblemsListWidget extends StatefulWidget {
   final Data data;
 
-  const LoadedProblemsDashboardWidget({Key key, this.data}) : super(key: key);
+  const LoadedProblemsListWidget({Key key, this.data}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return LoadedProblemsDashboardWidgetState();
+    return LoadedProblemsListWidgetState();
   }
 }
 
-class LoadedProblemsDashboardWidgetState extends State<LoadedProblemsDashboardWidget> {
+class LoadedProblemsListWidgetState extends State<LoadedProblemsListWidget> {
   static const showEmptyGroups = false;
 
   List<Group> groups;

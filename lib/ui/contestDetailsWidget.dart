@@ -6,11 +6,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-class SingleContestWidget extends StatelessWidget {
+class ContestDetailsWidget extends StatelessWidget {
   final String user;
   final String contestId;
 
-  SingleContestWidget({this.user, this.contestId});
+  ContestDetailsWidget({this.user, this.contestId});
 
   @override
   Widget build(BuildContext context) =>
@@ -25,9 +25,7 @@ class LoadedSingleContestWidget extends StatefulWidget {
         super(key: key);
 
   @override
-  State<StatefulWidget> createState() {
-    return LoadedSingleContestWidgetState();
-  }
+  State<StatefulWidget> createState() => LoadedSingleContestWidgetState();
 }
 
 class LoadedSingleContestWidgetState extends State<LoadedSingleContestWidget> {

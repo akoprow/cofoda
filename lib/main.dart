@@ -1,6 +1,6 @@
-import 'package:cofoda/ui/contestsDashboard.dart';
-import 'package:cofoda/ui/problemsDashboard.dart';
-import 'package:cofoda/ui/singleContestWidget.dart';
+import 'package:cofoda/ui/contestDetailsWidget.dart';
+import 'package:cofoda/ui/contestsListScreen.dart';
+import 'package:cofoda/ui/problemsListScreen.dart';
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 
@@ -35,19 +35,19 @@ class AppComponentState extends State<AppComponent> {
 
   Handler _problemsHandler() => Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
-        return ProblemsDashboardWidget(user: user);
+        return ProblemsListScreenWidget(user: user);
       });
 
   Handler _allContestsHandler() => Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
-        return ContestsDashboardWidget(user: user);
+        return ContestsListScreen(user: user);
       });
 
   Handler _singleContestsHandler() =>
       Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
         final String contestId = params[contestIdParam]?.first;
-        return SingleContestWidget(user: user, contestId: contestId);
+        return ContestDetailsWidget(user: user, contestId: contestId);
       });
 
   @override

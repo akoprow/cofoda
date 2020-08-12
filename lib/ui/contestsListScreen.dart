@@ -2,7 +2,7 @@ import 'dart:core';
 
 import 'package:cofoda/codeforcesAPI.dart';
 import 'package:cofoda/model/contest.dart';
-import 'package:cofoda/ui/contestWidget.dart';
+import 'package:cofoda/ui/contestListTileWidget.dart';
 import 'package:cofoda/ui/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,21 +13,21 @@ import 'package:flutter/widgets.dart';
  * - refactor data into a common provider.
  */
 
-class ContestsDashboardWidget extends StatelessWidget {
+class ContestsListScreen extends StatelessWidget {
   final String user;
 
-  ContestsDashboardWidget({this.user});
+  ContestsListScreen({this.user});
 
   @override
   Widget build(BuildContext context) =>
-      showFuture(CodeforcesAPI().load(user: user), (Data data) => LoadedContestsDashboardWidget(data: data));
+      showFuture(CodeforcesAPI().load(user: user), (Data data) => LoadedContestsListWidget(data: data));
 }
 
-class LoadedContestsDashboardWidget extends StatelessWidget {
+class LoadedContestsListWidget extends StatelessWidget {
   final Data _data;
   final List<Contest> _contests;
 
-  LoadedContestsDashboardWidget({Key key, @required Data data})
+  LoadedContestsListWidget({Key key, @required Data data})
       : _data = data,
         _contests = data.contestList.allContests,
         super(key: key);
@@ -37,7 +37,7 @@ class LoadedContestsDashboardWidget extends StatelessWidget {
     final label = 'displaying all ${_contests.length} contests';
     final contests = SliverList(
         delegate: SliverChildBuilderDelegate(
-      (context, i) => ContestWidget(contest: _contests[i], data: _data),
+      (context, i) => ContestListTileWidget(contest: _contests[i], data: _data),
       childCount: _contests.length,
     ));
     final appBar = SliverAppBar(

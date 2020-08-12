@@ -5,11 +5,11 @@ import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/ui/problemWidget.dart';
 import 'package:flutter/material.dart';
 
-class ContestWidget extends StatelessWidget {
+class ContestListTileWidget extends StatelessWidget {
   final Contest _contest;
   final Data _data;
 
-  ContestWidget({Contest contest, Data data})
+  ContestListTileWidget({Contest contest, Data data})
       : _data = data,
         _contest = contest;
 
