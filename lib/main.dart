@@ -17,6 +17,7 @@ class AppComponentState extends State<AppComponent> {
   static const String userQueryParam = 'user';
   static const String contestIdParam = 'contestId';
   static const String ratingLimitParam = 'maxRating';
+  static const String filterParam = 'filter';
 
   static const String routeRoot = '/';
   static const String routeProblems = '/problems';
@@ -42,7 +43,9 @@ class AppComponentState extends State<AppComponent> {
   Handler _allContestsHandler() => Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
         final String ratingLimit = params[ratingLimitParam]?.first;
-        return ContestsListScreen(user: user, ratingLimit: ratingLimit == null ? null : int.parse(ratingLimit));
+        final String filter = params[filterParam]?.first;
+        return ContestsListScreen(
+            user: user, filter: filter, ratingLimit: ratingLimit == null ? null : int.parse(ratingLimit));
       });
 
   Handler _singleContestsHandler() =>

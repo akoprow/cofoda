@@ -4,7 +4,7 @@ import 'package:cofoda/model/submissions.dart';
 import 'package:flutter/material.dart';
 
 Color problemStatusToColor(Data data, Problem problem, {int ratingLimit}) {
-  final status = data.statusOfProblem(problem);
+  final status = data.statusOfProblem(problem, ratingLimit: ratingLimit);
   switch (status) {
     case ProblemStatus.solvedLive:
       return Colors.green[500];
@@ -14,12 +14,10 @@ Color problemStatusToColor(Data data, Problem problem, {int ratingLimit}) {
       return Colors.green[100];
     case ProblemStatus.tried:
       return Colors.red[200];
+    case ProblemStatus.toUpSolve:
+      return Colors.yellow[200];
     default:
-      if (ratingLimit != null && problem.rating != null && problem.rating <= ratingLimit) {
-        return Colors.yellow[200];
-      } else {
-        return Colors.grey[200];
-      }
+      return Colors.grey[200];
   }
 }
 

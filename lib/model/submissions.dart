@@ -2,7 +2,8 @@ import 'dart:math';
 
 import 'package:cofoda/model/problem.dart';
 
-enum ProblemStatus { untried, tried, solvedPractice, solvedVirtual, solvedLive }
+// BEWARE: order matters as we pick the last that matches.
+enum ProblemStatus { untried, toUpSolve, tried, solvedPractice, solvedVirtual, solvedLive }
 
 ProblemStatus _betterStatus(ProblemStatus s1, ProblemStatus s2) => ProblemStatus.values[max(s1.index, s2.index)];
 
@@ -49,8 +50,10 @@ class AllSubmissions {
   List<Submission> submissionsForProblem(Problem problem) =>
       _submissions.containsKey(problem) ? _submissions[problem] : [];
 
-  ProblemStatus statusOfProblem(Problem problem) {
-    var result = ProblemStatus.untried;
+  ProblemStatus statusOfProblem(Problem problem, {int ratingLimit}) {
+    var result = (ratingLimit != null && problem.rating != null && problem.rating <= ratingLimit)
+        ? ProblemStatus.toUpSolve
+        : ProblemStatus.untried;
     for (final submission in submissionsForProblem(problem)) {
       result = _betterStatus(result, submission.status);
     }
