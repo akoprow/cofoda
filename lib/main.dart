@@ -16,7 +16,7 @@ class AppComponent extends StatefulWidget {
 class AppComponentState extends State<AppComponent> {
   static const String userQueryParam = 'user';
   static const String contestIdParam = 'contestId';
-  static const String ratingLimitParam = 'maxRating';
+  static const String ratingLimitParam = 'upsolveTo';
   static const String filterParam = 'filter';
 
   static const String routeRoot = '/';

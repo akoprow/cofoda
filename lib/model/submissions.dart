@@ -5,6 +5,8 @@ import 'package:cofoda/model/problem.dart';
 // BEWARE: order matters as we pick the last that matches.
 enum ProblemStatus { untried, toUpSolve, tried, solvedPractice, solvedVirtual, solvedLive }
 
+final solvedStatuses = {ProblemStatus.solvedLive, ProblemStatus.solvedVirtual, ProblemStatus.solvedPractice};
+
 ProblemStatus _betterStatus(ProblemStatus s1, ProblemStatus s2) => ProblemStatus.values[max(s1.index, s2.index)];
 
 class Submission {

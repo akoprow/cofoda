@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 
 Color problemStatusToColor(Data data, Problem problem, {int ratingLimit}) {
   final status = data.statusOfProblem(problem, ratingLimit: ratingLimit);
+  return statusToColor(status);
+}
+
+Color statusToColor(ProblemStatus status) {
   switch (status) {
     case ProblemStatus.solvedLive:
       return Colors.green[500];
