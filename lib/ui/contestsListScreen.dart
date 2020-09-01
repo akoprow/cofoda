@@ -44,7 +44,7 @@ class LoadedContestsListWidget extends StatelessWidget {
 
   LoadedContestsListWidget({Key key, @required Data data, int ratingLimit, String filter, String user})
       : this.withContests(_filterContests(data, filter, ratingLimit: ratingLimit),
-      key: key, data: data, ratingLimit: ratingLimit, user: user);
+            key: key, data: data, ratingLimit: ratingLimit, user: user);
 
   static List<Contest> _filterContests(Data data, String filter, {int ratingLimit}) {
     return data.contestList.allContests.where(_getContestFilter(data, filter, ratingLimit: ratingLimit)).toList();
@@ -74,17 +74,13 @@ class LoadedContestsListWidget extends StatelessWidget {
   }
 
   static Widget _generateProblemStats(List<Contest> contests, {Data data, int ratingLimit, String user}) {
-    final Map<ProblemStatus, int> res =
-    Map.fromIterables(ProblemStatus.values, ProblemStatus.values.map((status) => 0));
-    contests.forEach((contest) {
-      contest.problems.forEach((problem) {
-        final status = data.statusOfProblem(problem, ratingLimit: ratingLimit);
-        res[status] = res[status] + 1;
-      });
-    });
-    res.removeWhere((key, value) => value == 0);
-    final stats = _renderStats(res);
-    return ListTile(leading: Text(user), title: Row(children: stats));
+    final statuses = contests
+        .map((contest) => contest.problems.map((problem) => data.statusOfProblem(problem, ratingLimit: ratingLimit)))
+        .expand((x) => x)
+        .toList();
+    final Map<ProblemStatus, int> stats = Map.fromIterables(
+        ProblemStatus.values, ProblemStatus.values.map((status) => statuses.where((s) => s == status).length));
+    return ListTile(leading: Text(user), title: Row(children: _renderStats(stats)));
   }
 
   static List<Widget> _renderStats(Map<ProblemStatus, int> stats) {
@@ -95,19 +91,12 @@ class LoadedContestsListWidget extends StatelessWidget {
               label: Text(stats[status].toString()),
               backgroundColor: statusToColor(status),
             ));
-    final solved = stats.keys
-        .where((s) => solvedStatuses.contains(s))
-        .map((s) => stats[s])
-        .toList()
-        .reversed
-        .toList();
-    final int solvedSum = solved.fold(0, (x, y) => x + y);
-    final explanation = (solved.length > 1) ? Text('(' + solved.join(' + ') + ' = $solvedSum solved)') : Text('');
-    return stats.keys
-        .toList()
-        .reversed
-        .map(renderStatus)
-        .toList() + [explanation];
+    final solvedLive = stats[ProblemStatus.solvedLive];
+    final solvedVirtual = stats[ProblemStatus.solvedVirtual];
+    final solvedPractice = stats[ProblemStatus.solvedPractice];
+    final solvedTotal = solvedLive + solvedVirtual + solvedPractice;
+    final explanation = Text('($solvedLive + $solvedVirtual + $solvedPractice = $solvedTotal solved)');
+    return ProblemStatus.values.reversed.map(renderStatus).toList() + [explanation];
   }
 
   @override
