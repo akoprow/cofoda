@@ -15,6 +15,7 @@ class AppComponent extends StatefulWidget {
 
 class AppComponentState extends State<AppComponent> {
   static const String userQueryParam = 'user';
+  static const String vsUserQueryParam = 'vsUser';
   static const String contestIdParam = 'contestId';
   static const String ratingLimitParam = 'upsolveTo';
   static const String filterParam = 'filter';
@@ -42,10 +43,14 @@ class AppComponentState extends State<AppComponent> {
 
   Handler _allContestsHandler() => Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
+        final String vsUser = params[vsUserQueryParam]?.first;
         final String ratingLimit = params[ratingLimitParam]?.first;
         final String filter = params[filterParam]?.first;
         return ContestsListScreen(
-            user: user, filter: filter, ratingLimit: ratingLimit == null ? null : int.parse(ratingLimit));
+            user: user,
+            vsUser: vsUser,
+            filter: filter,
+            ratingLimit: ratingLimit == null ? null : int.parse(ratingLimit));
       });
 
   Handler _singleContestsHandler() =>
