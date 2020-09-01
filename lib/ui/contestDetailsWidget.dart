@@ -7,14 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class ContestDetailsWidget extends StatelessWidget {
-  final String user;
+  final List<String> users;
   final String contestId;
 
-  ContestDetailsWidget({this.user, this.contestId});
+  ContestDetailsWidget({this.users, this.contestId});
 
   @override
   Widget build(BuildContext context) =>
-      showFuture(CodeforcesAPI().load(user: user), (Data data) => LoadedSingleContestWidget(data: data));
+      showFuture(CodeforcesAPI().load(users: users), (Data data) => LoadedSingleContestWidget(data: data));
 }
 
 class LoadedSingleContestWidget extends StatefulWidget {

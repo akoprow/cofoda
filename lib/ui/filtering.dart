@@ -18,14 +18,15 @@ class FilterByRating extends Filter {
 }
 
 class FilterByStatus extends Filter {
+  final String user;
   final Set<ProblemStatus> acceptedStatus;
   final Data data;
 
-  const FilterByStatus(this.data, this.acceptedStatus);
+  const FilterByStatus(this.user, this.data, this.acceptedStatus);
 
   @override
   bool test(Problem problem) {
-    return acceptedStatus.contains(data.statusOfProblem(problem));
+    return acceptedStatus.contains(data.statusOfProblem(user, problem));
   }
 }
 

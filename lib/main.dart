@@ -52,7 +52,7 @@ class AppComponentState extends State<AppComponent> {
       Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
         final String contestId = params[contestIdParam]?.first;
-        return ContestDetailsWidget(user: user, contestId: contestId);
+        return ContestDetailsWidget(users: [user], contestId: contestId);
       });
 
   @override

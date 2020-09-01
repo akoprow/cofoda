@@ -27,15 +27,17 @@ class ProblemsListScreenWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final body = showFuture(CodeforcesAPI().load(user: user), (Data data) => LoadedProblemsListWidget(data: data));
+    final body = showFuture(
+        CodeforcesAPI().load(users: [user]), (Data data) => LoadedProblemsListWidget(user: user, data: data));
     return Scaffold(appBar: AppBar(title: Text('CoFoDa: CodeForces Dashboard')), body: body);
   }
 }
 
 class LoadedProblemsListWidget extends StatefulWidget {
+  final String user;
   final Data data;
 
-  const LoadedProblemsListWidget({Key key, this.data}) : super(key: key);
+  const LoadedProblemsListWidget({Key key, @required this.user, @required this.data}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -120,13 +122,13 @@ class LoadedProblemsListWidgetState extends State<LoadedProblemsListWidget> {
   Filter _getProblemFilter() =>
       CompositeFilter([
         FilterByRating(1400, 1600),
-        FilterByStatus(widget.data, {ProblemStatus.untried})
+        FilterByStatus(widget.user, widget.data, {ProblemStatus.untried})
       ]);
 
   Grouper<String> _getProblemGrouper() => GroupByProblemType();
 
   Widget _showProblems(Iterable<Problem> problems) {
-    final problemWidgets = problems.map((problem) => ProblemWidget(widget.data, problem)).toList();
+    final problemWidgets = problems.map((problem) => ProblemWidget(widget.user, widget.data, problem)).toList();
     return Padding(
         padding: EdgeInsets.all(10),
         child: GridView.extent(

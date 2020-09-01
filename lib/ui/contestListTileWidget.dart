@@ -6,12 +6,14 @@ import 'package:cofoda/ui/problemWidget.dart';
 import 'package:flutter/material.dart';
 
 class ContestListTileWidget extends StatelessWidget {
+  final String _user;
   final Contest _contest;
   final Data _data;
   final int _ratingLimit;
 
-  ContestListTileWidget({Contest contest, Data data, int ratingLimit})
+  ContestListTileWidget({@required String user, @required Contest contest, @required Data data, int ratingLimit})
       : _data = data,
+        _user = user,
         _ratingLimit = ratingLimit,
         _contest = contest;
 
@@ -37,7 +39,7 @@ class ContestListTileWidget extends StatelessWidget {
   StatelessWidget _showProblem(Problem problem) {
     final card = Chip(
       label: Text(problem.index),
-      backgroundColor: problemStatusToColor(_data, problem, ratingLimit: _ratingLimit),
+      backgroundColor: problemStatusToColor(_user, _data, problem, ratingLimit: _ratingLimit),
     );
     return GestureDetector(onTap: () => problem.open(), child: card);
   }

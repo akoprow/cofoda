@@ -13,15 +13,15 @@ import 'model/problem.dart';
 class Data {
   final ProblemList problemList;
   final ContestList contestList;
-  final AllSubmissions submissions;
+  final Map<String, AllUserSubmissions> userSubmissions;
 
-  Data(this.problemList, this.contestList, this.submissions);
+  Data(this.problemList, this.contestList, this.userSubmissions);
 
-  ProblemStatus statusOfProblem(Problem problem, {int ratingLimit}) =>
-      submissions.statusOfProblem(problem, ratingLimit: ratingLimit);
+  ProblemStatus statusOfProblem(String user, Problem problem, {int ratingLimit}) =>
+      userSubmissions[user].statusOfProblem(problem, ratingLimit: ratingLimit);
 
-  List<Contest> allContestsParticipatedIn() {
-    final problems = submissions.submittedProblems;
+  List<Contest> allContestsParticipatedIn(String user) {
+    final problems = userSubmissions[user].submittedProblems;
     return problems.map((problem) => problem.getContest(this)).toList();
   }
 }
@@ -51,13 +51,14 @@ Future<Map<String, dynamic>> _fetchFrom(String uri) async {
     }
   }
 
-Future<Data> _loadData(String user) async {
+Future<Data> _loadData(List<String> users) async {
   final problems = ProblemList.fromJson(await _loadProblemsJson());
   final contests = ContestList.fromJson(await _loadContestsJson(), problems);
-  final submissions = user == null ? AllSubmissions.empty() : AllSubmissions.fromJson(await _loadSubmissionsJson(user));
-  return Data(problems, contests, submissions);
+  final List<AllUserSubmissions> submissions =
+      await Future.wait(users.map((user) async => AllUserSubmissions.fromJson(await _loadSubmissionsJson(user))));
+  return Data(problems, contests, Map.fromIterables(users, submissions));
 }
 
 class CodeforcesAPI {
-  Future<Data> load({String user}) => compute(_loadData, user);
+  Future<Data> load({List<String> users}) => compute(_loadData, users);
 }

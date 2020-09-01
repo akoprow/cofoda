@@ -23,11 +23,12 @@ class ContestsListScreen extends StatelessWidget {
   ContestsListScreen({this.user, this.ratingLimit, this.filter});
 
   @override
-  Widget build(BuildContext context) => showFuture(CodeforcesAPI().load(user: user),
+  Widget build(BuildContext context) => showFuture(CodeforcesAPI().load(users: [user]),
       (Data data) => LoadedContestsListWidget(data: data, ratingLimit: ratingLimit, filter: filter, user: user));
 }
 
 class LoadedContestsListWidget extends StatelessWidget {
+  final String _user;
   final Data _data;
   final int _ratingLimit;
   final List<Contest> _allContests;
@@ -35,24 +36,29 @@ class LoadedContestsListWidget extends StatelessWidget {
   final Widget _stats;
 
   LoadedContestsListWidget.withContests(this._contests,
-      {Key key, @required Data data, int ratingLimit, String filter, String user})
+      {Key key, @required Data data, int ratingLimit, @required String filter, @required String user})
       : _data = data,
+        _user = user,
         _ratingLimit = ratingLimit,
         _allContests = data.contestList.allContests,
         _stats = _generateProblemStats(_contests, data: data, ratingLimit: ratingLimit, user: user),
         super(key: key);
 
   LoadedContestsListWidget({Key key, @required Data data, int ratingLimit, String filter, String user})
-      : this.withContests(_filterContests(data, filter, ratingLimit: ratingLimit),
-            key: key, data: data, ratingLimit: ratingLimit, user: user);
+      : this.withContests(_filterContests(user, data, filter, ratingLimit: ratingLimit),
+      key: key,
+      data: data,
+      filter: filter,
+      ratingLimit: ratingLimit,
+      user: user);
 
-  static List<Contest> _filterContests(Data data, String filter, {int ratingLimit}) {
-    return data.contestList.allContests.where(_getContestFilter(data, filter, ratingLimit: ratingLimit)).toList();
+  static List<Contest> _filterContests(String user, Data data, String filter, {int ratingLimit}) {
+    return data.contestList.allContests.where(_getContestFilter(user, data, filter, ratingLimit: ratingLimit)).toList();
   }
 
-  static bool Function(Contest) _getContestFilter(Data data, String filter, {int ratingLimit}) {
+  static bool Function(Contest) _getContestFilter(String user, Data data, String filter, {int ratingLimit}) {
     return (Contest contest) {
-      final statuses = contest.problems.map((p) => data.statusOfProblem(p, ratingLimit: ratingLimit)).toList();
+      final statuses = contest.problems.map((p) => data.statusOfProblem(user, p, ratingLimit: ratingLimit)).toList();
       return statuses.any(_getContestStatusPredicate(data, filter));
     };
   }
@@ -75,7 +81,8 @@ class LoadedContestsListWidget extends StatelessWidget {
 
   static Widget _generateProblemStats(List<Contest> contests, {Data data, int ratingLimit, String user}) {
     final statuses = contests
-        .map((contest) => contest.problems.map((problem) => data.statusOfProblem(problem, ratingLimit: ratingLimit)))
+        .map((contest) =>
+        contest.problems.map((problem) => data.statusOfProblem(user, problem, ratingLimit: ratingLimit)))
         .expand((x) => x)
         .toList();
     final Map<ProblemStatus, int> stats = Map.fromIterables(
@@ -108,9 +115,10 @@ class LoadedContestsListWidget extends StatelessWidget {
     final topBarSliver = SliverList(delegate: SliverChildBuilderDelegate((context, i) => topBar, childCount: 1));
     final contests = SliverList(
         delegate: SliverChildBuilderDelegate(
-              (context, i) => ContestListTileWidget(contest: _contests[i], data: _data, ratingLimit: _ratingLimit),
-      childCount: _contests.length,
-    ));
+              (context, i) =>
+              ContestListTileWidget(user: _user, contest: _contests[i], data: _data, ratingLimit: _ratingLimit),
+          childCount: _contests.length,
+        ));
     return Scaffold(body: CustomScrollView(slivers: [topBarSliver, contests]));
   }
 }

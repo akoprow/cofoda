@@ -41,11 +41,11 @@ class Submission {
   }
 }
 
-class AllSubmissions {
+class AllUserSubmissions {
   // Map from problem ID (i.e. 1385E) to a set of submissions for that problem.
   final Map<Problem, List<Submission>> _submissions;
 
-  AllSubmissions(this._submissions);
+  AllUserSubmissions(this._submissions);
 
   List<Problem> get submittedProblems => _submissions.keys.toList();
 
@@ -62,12 +62,12 @@ class AllSubmissions {
     return result;
   }
 
-  factory AllSubmissions.empty() => AllSubmissions({});
+  factory AllUserSubmissions.empty() => AllUserSubmissions({});
 
-  factory AllSubmissions.fromJson(List<dynamic> json) {
+  factory AllUserSubmissions.fromJson(List<dynamic> json) {
     final submissions = json.map((dynamic json) => Submission.fromJson(json as Map<String, dynamic>));
     final submittedProblems = submissions.map((submission) => submission.problem).toSet();
-    return AllSubmissions({
+    return AllUserSubmissions({
       for (var problem in submittedProblems)
         problem: submissions.where((submission) => submission.problem == problem).toList()
     });

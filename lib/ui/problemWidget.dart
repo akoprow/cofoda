@@ -3,8 +3,8 @@ import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/submissions.dart';
 import 'package:flutter/material.dart';
 
-Color problemStatusToColor(Data data, Problem problem, {int ratingLimit}) {
-  final status = data.statusOfProblem(problem, ratingLimit: ratingLimit);
+Color problemStatusToColor(String user, Data data, Problem problem, {int ratingLimit}) {
+  final status = data.statusOfProblem(user, problem, ratingLimit: ratingLimit);
   return statusToColor(status);
 }
 
@@ -90,9 +90,10 @@ Color problemRatingToColor(Problem problem) => problem.rating != null ? _ratingC
 
 class ProblemWidget extends StatelessWidget {
   final Problem problem;
+  final String user;
   final Data data;
 
-  ProblemWidget(this.data, this.problem);
+  ProblemWidget(this.user, this.data, this.problem);
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +108,7 @@ class ProblemWidget extends StatelessWidget {
     final title = Text(problem.name);
     final card = Card(
       child: ListTile(leading: id, title: title, subtitle: tags),
-      color: problemStatusToColor(data, problem),
+      color: problemStatusToColor(user, data, problem),
     );
     return GestureDetector(onTap: () => problem.open(), child: card);
   }
