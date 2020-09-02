@@ -139,9 +139,9 @@ class LoadedContestsListWidget extends StatelessWidget {
     final topBarSliver = SliverList(delegate: SliverChildBuilderDelegate((context, i) => topBar, childCount: 1));
     final contests = SliverList(
         delegate: SliverChildBuilderDelegate(
-              (context, i) =>
-              ContestListTileWidget(user: _user, contest: _contests[i], data: _data, ratingLimit: _ratingLimit),
-          childCount: _contests.length,
+              (context, i) => ContestListTileWidget(
+          user: _user, vsUser: _vsUser, contest: _contests[i], data: _data, ratingLimit: _ratingLimit),
+      childCount: _contests.length,
         ));
     return Scaffold(body: CustomScrollView(slivers: [topBarSliver, contests]));
   }
