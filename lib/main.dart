@@ -1,6 +1,7 @@
 import 'package:cofoda/ui/contestDetailsWidget.dart';
 import 'package:cofoda/ui/contestsListScreen.dart';
 import 'package:cofoda/ui/problemsListScreen.dart';
+import 'package:cofoda/ui/userDetailsWidget.dart';
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 
@@ -21,6 +22,8 @@ class AppComponentState extends State<AppComponent> {
   static const String filterParam = 'filter';
 
   static const String routeRoot = '/';
+  static const String routeUserPrefix = '/user/';
+  static const String routeUser = '/user/:$userQueryParam';
   static const String routeProblems = '/problems';
   static const String routeAllContests = '/contests';
   static const String routeSingleContestPrefix = '/contest/';
@@ -31,6 +34,7 @@ class AppComponentState extends State<AppComponent> {
   AppComponentState() {
     router = Router();
     router.define(routeRoot, handler: _problemsHandler());
+    router.define(routeUser, handler: _userHandler());
     router.define(routeProblems, handler: _problemsHandler());
     router.define(routeAllContests, handler: _allContestsHandler());
     router.define(routeSingleContest, handler: _singleContestsHandler());
@@ -58,6 +62,12 @@ class AppComponentState extends State<AppComponent> {
         final String user = params[userQueryParam]?.first;
         final String contestId = params[contestIdParam]?.first;
         return ContestDetailsWidget(users: [user], contestId: contestId);
+      });
+
+  Handler _userHandler() => Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
+        final String user = params[userQueryParam]?.first;
+        final String vsUser = params[vsUserQueryParam]?.first;
+        return UserDetailsWidget(users: [user, vsUser]);
       });
 
   @override
