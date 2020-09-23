@@ -4,18 +4,49 @@ import 'package:flutter/material.dart';
 
 enum GroupSolvedProblemsBy { day, week, month, year }
 
-class UserProblemsOverTimeChart extends StatelessWidget {
+class UserProblemsOverTimeChart extends StatefulWidget {
   final List<String> users;
   final Data data;
 
   const UserProblemsOverTimeChart({Key key, this.users, this.data}) : super(key: key);
 
   @override
+  State<UserProblemsOverTimeChart> createState() => UserProblemsOverTimeChartState();
+}
+
+class UserProblemsOverTimeChartState extends State<UserProblemsOverTimeChart> {
+  bool cumulative = true;
+  GroupSolvedProblemsBy groupBy = GroupSolvedProblemsBy.day;
+
+  UserProblemsOverTimeChartState();
+
+  @override
   Widget build(BuildContext context) {
-    final userData = _generateUserSeries(users[0], charts.MaterialPalette.blue.shadeDefault);
-    final vsUserData = users[1] == null ? null : _generateUserSeries(users[1], charts.MaterialPalette.red.shadeDefault);
-    final chart = charts.TimeSeriesChart([userData, vsUserData].where((element) => element != null).toList());
-    return Card(child: Column(children: [ListTile(title: Text('Solved problems')), Expanded(child: chart)]));
+    final userData = _generateUserSeries(widget.users[0], charts.MaterialPalette.blue.shadeDefault);
+    final vsUserData =
+        widget.users[1] == null ? null : _generateUserSeries(widget.users[1], charts.MaterialPalette.red.shadeDefault);
+    final series = [userData, vsUserData].where((element) => element != null).toList();
+    final chart = _generateChart(series);
+    return Card(child: Column(children: [_createHeader(), Expanded(child: chart)]));
+  }
+
+  Widget _generateChart(List<charts.Series<SolvedProblems, DateTime>> series) {
+    print('generateChart, cumulative: ${cumulative}, group by: ${groupBy}');
+    if (cumulative) {
+      return charts.TimeSeriesChart(
+        series,
+        behaviors: [charts.SeriesLegend()],
+        defaultRenderer: charts.LineRendererConfig<DateTime>(),
+        defaultInteractions: true,
+      );
+    } else {
+      return charts.TimeSeriesChart(
+        series,
+        behaviors: [charts.SeriesLegend()],
+        defaultRenderer: charts.BarRendererConfig<DateTime>(),
+        defaultInteractions: false,
+      );
+    }
   }
 
   charts.Series<SolvedProblems, DateTime> _generateUserSeries(String user, charts.Color color) {
@@ -28,9 +59,8 @@ class UserProblemsOverTimeChart extends StatelessWidget {
         data: solvedByDay.entries.map((entry) => SolvedProblems(entry.key, entry.value)).toList());
   }
 
-  Map<DateTime, int> _getUserSolvedByDay(String user,
-      {bool acumulative = true, GroupSolvedProblemsBy groupBy = GroupSolvedProblemsBy.day}) {
-    final submissions = data.userSubmissions[user];
+  Map<DateTime, int> _getUserSolvedByDay(String user) {
+    final submissions = widget.data.userSubmissions[user];
     final solvedAt = submissions.submittedProblems
         .map((problem) => submissions.solvedWith(problem))
         .where((solution) => solution != null)
@@ -41,13 +71,13 @@ class UserProblemsOverTimeChart extends StatelessWidget {
     final solved = <DateTime, int>{};
     var solvedNum = 0;
     for (final solutionTime in solvedAt) {
-      final day = _roundDate(solutionTime, groupBy);
-      solved[day] = (acumulative) ? ++solvedNum : 1 + ((solved[day] != null) ? solved[day] : 0);
+      final day = _roundDate(solutionTime);
+      solved[day] = (cumulative) ? ++solvedNum : 1 + ((solved[day] != null) ? solved[day] : 0);
     }
     return solved;
   }
 
-  DateTime _roundDate(DateTime solutionTime, GroupSolvedProblemsBy groupBy) {
+  DateTime _roundDate(DateTime solutionTime) {
     switch (groupBy) {
       case GroupSolvedProblemsBy.day:
         return DateTime(solutionTime.year, solutionTime.month, solutionTime.day);
@@ -58,6 +88,36 @@ class UserProblemsOverTimeChart extends StatelessWidget {
       default:
         throw 'Unknown grouping: $groupBy';
     }
+  }
+
+  Widget _createHeader() {
+    final header = ListTile(title: Text('Solved problems'), leading: Icon(Icons.assignment_turned_in));
+    final cumulativeCtrl = SwitchListTile(
+      value: cumulative,
+      title: Text('Cumulative?'),
+      secondary: Icon(Icons.add_circle),
+      onChanged: (newValue) =>
+          setState(() {
+            cumulative = newValue;
+          }),
+    );
+    final groupByCtrl = DropdownButton<GroupSolvedProblemsBy>(
+      value: groupBy,
+      icon: Icon(Icons.event),
+      onChanged: (GroupSolvedProblemsBy newValue) {
+        setState(() {
+          groupBy = newValue;
+        });
+      },
+      items: [GroupSolvedProblemsBy.day, GroupSolvedProblemsBy.month, GroupSolvedProblemsBy.year]
+          .map((g) =>
+          DropdownMenuItem<GroupSolvedProblemsBy>(
+            value: g,
+            child: Text(g.toString()),
+          ))
+          .toList(),
+    );
+    return Column(children: [header, cumulativeCtrl, groupByCtrl]);
   }
 }
 
