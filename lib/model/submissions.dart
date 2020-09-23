@@ -11,13 +11,17 @@ ProblemStatus _betterStatus(ProblemStatus s1, ProblemStatus s2) => ProblemStatus
 
 class Submission {
   final Problem problem;
+  final DateTime time;
   final ProblemStatus status;
 
-  Submission({this.problem, this.status});
+  Submission({this.problem, this.time, this.status});
 
   factory Submission.fromJson(Map<String, dynamic> json) {
     final problem = Problem.fromJson(json['problem'] as Map<String, dynamic>);
-    return Submission(problem: problem, status: _parseProblemStatus(json));
+    return Submission(
+        problem: problem,
+        time: DateTime.fromMillisecondsSinceEpoch(1000 * (json['creationTimeSeconds'] as int)),
+        status: _parseProblemStatus(json));
   }
 
   static ProblemStatus _parseProblemStatus(Map<String, dynamic> json) {
@@ -60,6 +64,13 @@ class AllUserSubmissions {
       result = _betterStatus(result, submission.status);
     }
     return result;
+  }
+
+  Submission solvedWith(Problem problem) {
+    for (final submission in submissionsForProblem(problem)) {
+      if (solvedStatuses.contains(submission.status)) return submission;
+    }
+    return null;
   }
 
   factory AllUserSubmissions.empty() => AllUserSubmissions({});

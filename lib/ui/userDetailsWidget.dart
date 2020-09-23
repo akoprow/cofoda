@@ -1,4 +1,5 @@
 import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/ui/userProblemsOverTimeChart.dart';
 import 'package:cofoda/ui/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -14,10 +15,10 @@ class UserDetailsWidget extends StatelessWidget {
 
 class LoadedUserDetailsWidget extends StatefulWidget {
   final List<String> users;
-  final Data _data;
+  final Data data;
 
   LoadedUserDetailsWidget({Key key, @required Data data, @required List<String> users})
-      : _data = data,
+      : data = data,
         users = users,
         super(key: key);
 
@@ -32,7 +33,7 @@ class LoadedUserDetailsWidgetState extends State<LoadedUserDetailsWidget> {
         appBar: AppBar(
           title: Text(getTitle()),
         ),
-        body: Text('TODO'));
+        body: UserProblemsOverTimeChart(users: widget.users, data: widget.data));
   }
 
   String getTitle() => (widget.users[1] == null)
