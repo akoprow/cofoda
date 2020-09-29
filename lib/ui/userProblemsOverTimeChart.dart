@@ -27,7 +27,7 @@ class UserProblemsOverTimeChartState extends State<UserProblemsOverTimeChart> {
         widget.users[1] == null ? null : _generateUserSeries(widget.users[1], charts.MaterialPalette.red.shadeDefault);
     final series = [userData, vsUserData].where((element) => element != null).toList();
     final chart = _generateChart(series);
-    return Card(child: Column(children: [_createHeader(), Expanded(child: chart)]));
+    return Card(child: Column(children: [/*_createHeader(),*/ Expanded(child: chart)]));
   }
 
   Widget _generateChart(List<charts.Series<SolvedProblems, DateTime>> series) {
@@ -72,7 +72,7 @@ class UserProblemsOverTimeChartState extends State<UserProblemsOverTimeChart> {
     var solvedNum = 0;
     for (final solutionTime in solvedAt) {
       final day = _roundDate(solutionTime);
-      solved[day] = (cumulative) ? ++solvedNum : 1 + ((solved[day] != null) ? solved[day] : 0);
+      solved[day] = (cumulative) ? ++solvedNum : 1 + (solved[day] ?? 0);
     }
     return solved;
   }

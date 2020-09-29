@@ -1,4 +1,5 @@
 import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/ui/userProblemsByRatingChart.dart';
 import 'package:cofoda/ui/userProblemsOverTimeChart.dart';
 import 'package:cofoda/ui/utils.dart';
 import 'package:flutter/material.dart';
@@ -29,11 +30,20 @@ class LoadedUserDetailsWidget extends StatefulWidget {
 class LoadedUserDetailsWidgetState extends State<LoadedUserDetailsWidget> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text(getTitle()),
-        ),
-        body: UserProblemsOverTimeChart(users: widget.users, data: widget.data));
+    final body = TabBarView(children: [
+      UserProblemsOverTimeChart(users: widget.users, data: widget.data),
+      UserProblemsByRatingChart(users: widget.users, data: widget.data)
+    ]);
+    return MaterialApp(
+        home: DefaultTabController(
+            length: 2,
+            child: Scaffold(
+                appBar: AppBar(
+                  bottom:
+                      TabBar(tabs: [Tab(text: 'Solved problems over time'), Tab(text: 'Solved problems by rating')]),
+                  title: Text(getTitle()),
+                ),
+                body: body)));
   }
 
   String getTitle() => (widget.users[1] == null)
