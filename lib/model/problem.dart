@@ -31,5 +31,6 @@ class Problem implements Comparable<Problem> {
   @override
   int get hashCode => name.hashCode;
 
-  Future<void> open() => launch('https://codeforces.com/problemset/problem/$contestId/$index');
+  Future<void> open() =>
+      launch('https://codeforces.com/contest/$contestId/problem/$index');
 }
