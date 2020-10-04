@@ -60,5 +60,8 @@ Future<Data> _loadData(List<String> users) async {
 }
 
 class CodeforcesAPI {
-  Future<Data> load({List<String> users}) => compute(_loadData, users);
+  Future<Data> load({List<String> users}) {
+    final queryUsers = users.where((u) => u != null).toList();
+    return compute(_loadData, queryUsers);
+  }
 }
