@@ -2,7 +2,7 @@ import 'package:cofoda/ui/contestDetailsWidget.dart';
 import 'package:cofoda/ui/contestsListScreen.dart';
 import 'package:cofoda/ui/problemsListScreen.dart';
 import 'package:cofoda/ui/userDetailsWidget.dart';
-import 'package:fluro/fluro.dart';
+import 'package:fluro/fluro.dart' as fluro;
 import 'package:flutter/material.dart';
 
 void main() {
@@ -27,12 +27,12 @@ class AppComponentState extends State<AppComponent> {
   static const String routeProblems = '/problems';
   static const String routeAllContests = '/contests';
   static const String routeSingleContestPrefix = '/contest/';
-  static const String routeSingleContest = '$routeSingleContestPrefix:$contestIdParam';
+  static const String routeSingleContest =
+      '$routeSingleContestPrefix:$contestIdParam';
 
-  static Router router = Router();
+  static final router = fluro.Router();
 
   AppComponentState() {
-    router = Router();
     router.define(routeRoot, handler: _problemsHandler());
     router.define(routeUser, handler: _userHandler());
     router.define(routeProblems, handler: _problemsHandler());
@@ -40,12 +40,14 @@ class AppComponentState extends State<AppComponent> {
     router.define(routeSingleContest, handler: _singleContestsHandler());
   }
 
-  Handler _problemsHandler() => Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
+  fluro.Handler _problemsHandler() => fluro.Handler(handlerFunc:
+          (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
         return ProblemsListScreenWidget(user: user);
       });
 
-  Handler _allContestsHandler() => Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
+  fluro.Handler _allContestsHandler() => fluro.Handler(handlerFunc:
+          (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
         final String vsUser = params[vsUserQueryParam]?.first;
         final String ratingLimit = params[ratingLimitParam]?.first;
@@ -57,14 +59,15 @@ class AppComponentState extends State<AppComponent> {
             ratingLimit: ratingLimit == null ? null : int.parse(ratingLimit));
       });
 
-  Handler _singleContestsHandler() =>
-      Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
+  fluro.Handler _singleContestsHandler() => fluro.Handler(handlerFunc:
+          (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
         final String contestId = params[contestIdParam]?.first;
         return ContestDetailsWidget(users: [user], contestId: contestId);
       });
 
-  Handler _userHandler() => Handler(handlerFunc: (BuildContext context, Map<String, List<String>> params) {
+  fluro.Handler _userHandler() => fluro.Handler(handlerFunc:
+          (BuildContext context, Map<String, List<String>> params) {
         final String user = params[userQueryParam]?.first;
         final String vsUser = params[vsUserQueryParam]?.first;
         return UserDetailsWidget(users: [user, vsUser]);
