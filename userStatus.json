@@ -1,0 +1,149 @@
+{
+  "status": "OK",
+  "result": {
+    "contest": {
+      "id": 1422,
+      "name": "Codeforces Round #675 (Div. 2)",
+      "type": "CF",
+      "phase": "FINISHED",
+      "frozen": false,
+      "durationSeconds": 7200,
+      "startTimeSeconds": 1601827500,
+      "relativeTimeSeconds": 97338
+    },
+    "problems": [
+      {
+        "contestId": 1422,
+        "index": "A",
+        "name": "Fence",
+        "type": "PROGRAMMING",
+        "points": 500.0,
+        "rating": 800,
+        "tags": [
+          "geometry",
+          "math"
+        ]
+      },
+      {
+        "contestId": 1422,
+        "index": "B",
+        "name": "Nice Matrix",
+        "type": "PROGRAMMING",
+        "points": 750.0,
+        "rating": 1300,
+        "tags": [
+          "greedy",
+          "implementation"
+        ]
+      },
+      {
+        "contestId": 1422,
+        "index": "C",
+        "name": "Bargain",
+        "type": "PROGRAMMING",
+        "points": 1000.0,
+        "rating": 1700,
+        "tags": [
+          "dp",
+          "math"
+        ]
+      },
+      {
+        "contestId": 1422,
+        "index": "D",
+        "name": "Returning Home",
+        "type": "PROGRAMMING",
+        "points": 1500.0,
+        "rating": 2300,
+        "tags": [
+          "graphs",
+          "implementation",
+          "shortest paths",
+          "sortings"
+        ]
+      },
+      {
+        "contestId": 1422,
+        "index": "E",
+        "name": "Minlexes",
+        "type": "PROGRAMMING",
+        "points": 2000.0,
+        "rating": 2700,
+        "tags": [
+          "dp",
+          "greedy",
+          "implementation",
+          "strings"
+        ]
+      },
+      {
+        "contestId": 1422,
+        "index": "F",
+        "name": "Boring Queries",
+        "type": "PROGRAMMING",
+        "points": 2750.0,
+        "rating": 2700,
+        "tags": [
+          "data structures",
+          "math",
+          "number theory"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "party": {
+          "contestId": 1422,
+          "members": [
+            {
+              "handle": "koper"
+            }
+          ],
+          "participantType": "CONTESTANT",
+          "ghost": false,
+          "room": 139,
+          "startTimeSeconds": 1601827500
+        },
+        "rank": 1701,
+        "points": 1142.0,
+        "penalty": 0,
+        "successfulHackCount": 0,
+        "unsuccessfulHackCount": 0,
+        "problemResults": [
+          {
+            "points": 488.0,
+            "rejectedAttemptCount": 0,
+            "type": "FINAL",
+            "bestSubmissionTimeSeconds": 365
+          },
+          {
+            "points": 654.0,
+            "rejectedAttemptCount": 0,
+            "type": "FINAL",
+            "bestSubmissionTimeSeconds": 1962
+          },
+          {
+            "points": 0.0,
+            "rejectedAttemptCount": 0,
+            "type": "FINAL"
+          },
+          {
+            "points": 0.0,
+            "rejectedAttemptCount": 0,
+            "type": "FINAL"
+          },
+          {
+            "points": 0.0,
+            "rejectedAttemptCount": 0,
+            "type": "FINAL"
+          },
+          {
+            "points": 0.0,
+            "rejectedAttemptCount": 0,
+            "type": "FINAL"
+          }
+        ]
+      }
+    ]
+  }
+}
