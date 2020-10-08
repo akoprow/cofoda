@@ -8,44 +8,60 @@ const async = require("async");
 admin.initializeApp();
 const db = admin.firestore();
 
+const concurrencyLimits = {
+  maxProblemsLoadingInParallel: 10,
+  maxContestsLoadingInParallel: 10
+}
+
 exports.loadData = functions.runWith({timeoutSeconds: 540}).https.onRequest(async (req, res) => {
-  //await loadAllContests();
+  await loadAllContests();
   await loadAllProblems();
-  es.json({result: 'OK'});
+  res.json({result: 'OK'});
 });
 
 async function loadAllContests() {
   const response = await axios.get('https://codeforces.com/api/contest.list?gym=false');
+  const contests = response.data.result;
+  functions.logger.log(`Fetched contests #: ${contests.length}`);
 
-  console.log(`Fetched contests #: ${response.data.result.length}`);
-  const newContests = await async.map(response.data.result, (contest) => loadContest(contest));
+  const newContests = await async.mapLimit(contests, concurrencyLimits.maxContestsLoadingInParallel, loadContest);
   const numNewContests = newContests.reduce((a, b) => a + b, 0);
-  console.log(`Processed new contests #: ${numNewContests}`);
+  functions.logger.log(`Processed new contests #: ${numNewContests}`);
 }
 
 async function loadContest(contest) {
   const contestRef = db.collection('contests').doc(contest.id.toString())
-  if (!contestRef.exists) {
-    console.log(`Found new contest: ${contest.id}`);
-    await contestRef.set({
-      name: contest.name
-    });
-    console.log(`Finished processing new contest: ${contest.id}`);
+  if (contestRef.exists) {
+    return 0;
   }
+
+  console.log(`Found new contest: ${contest.id}`);
+  await contestRef.set({
+    name: contest.name
+  });
+  console.log(`Finished processing new contest: ${contest.id}`);
+  return 1;
 }
 
 async function loadAllProblems() {
   const response = await axios.get('https://codeforces.com/api/problemset.problems');
-  console.log(`Fetched # problems: ${response.data.result.problems.length}`);
-  await async.each(response.data.result.problems, (problem) => loadProblem(problem));
+  const problems = response.data.result.problems;
+  functions.logger.log(`Fetched # problems: ${problems.length}`);
+
+  const newProblems = await async.mapLimit(problems, concurrencyLimits.maxProblemsLoadingInParallel, loadProblem);
+  const numNewProblems = newProblems.reduce((a, b) => a + b, 0);
+  functions.logger.log(`Processed new problems #: ${numNewProblems}`);
 }
 
 async function loadProblem(problem) {
   const problemId = problem.contestId + problem.index;
   const problemRef = db.collection('problems').doc(problemId);
-  if (!problemRef.exists) {
-    console.log(`Found new problem: ${problemId}`);
-    await problemRef.set(problem);
-    console.log(`Finished processing new problem: ${problemId}`);
+  if (problemRef.exists) {
+    return 0;
   }
+
+  console.log(`Found new problem: ${problemId}`);
+  await problemRef.set(problem);
+  console.log(`Finished processing new problem: ${problemId}`);
+  return 1;
 }
