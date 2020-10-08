@@ -21,7 +21,7 @@ exports.loadData = functions.runWith({timeoutSeconds: 540}).https.onRequest(asyn
 
 async function loadAllContests() {
   const response = await axios.get('https://codeforces.com/api/contest.list?gym=false');
-  const contests = response.data.result;
+  const contests = response.data.result.splice(0, 10);
   functions.logger.log(`Fetched contests #: ${contests.length}`);
 
   const newContests = await async.mapLimit(contests, concurrencyLimits.maxContestsLoadingInParallel, loadContest);
@@ -31,7 +31,7 @@ async function loadAllContests() {
 
 async function loadContest(contest) {
   const contestRef = db.collection('contests').doc(contest.id.toString())
-  if (contestRef.exists) {
+  if ((await contestRef.get()).exists) {
     return 0;
   }
 
@@ -45,7 +45,7 @@ async function loadContest(contest) {
 
 async function loadAllProblems() {
   const response = await axios.get('https://codeforces.com/api/problemset.problems');
-  const problems = response.data.result.problems;
+  const problems = response.data.result.problems.splice(0, 10);
   functions.logger.log(`Fetched # problems: ${problems.length}`);
 
   const newProblems = await async.mapLimit(problems, concurrencyLimits.maxProblemsLoadingInParallel, loadProblem);
@@ -56,7 +56,7 @@ async function loadAllProblems() {
 async function loadProblem(problem) {
   const problemId = problem.contestId + problem.index;
   const problemRef = db.collection('problems').doc(problemId);
-  if (problemRef.exists) {
+  if ((await problemRef.get()).exists) {
     return 0;
   }
 
