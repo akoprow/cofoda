@@ -9,6 +9,7 @@ const async = require("async");
 admin.initializeApp();
 const db = admin.firestore();
 
+const contestScoreHistogramBucketsNum = 50;
 const limitContests = 20;
 const limitProblems = 5;
 
@@ -25,9 +26,7 @@ exports.loadData = functions.runWith({timeoutSeconds: 540}).https
 });
 
 exports.loadContestDetails = functions.firestore.document('contests/{contestId}')
-.onCreate(async (change, context) => {
-  await loadContestDetails(context.params.contestId);
-});
+  .onCreate(async (snap, context) => await loadContestDetails(snap));
 
 async function loadAllContests() {
   const response = await axios.get('https://codeforces.com/api/contest.list?gym=false');
@@ -41,7 +40,7 @@ async function loadAllContests() {
 }
 
 async function loadContest(contest) {
-  if (contest.phase !== 'FINISHED' || contest.type !== 'CF') {
+  if (contest.phase !== 'FINISHED') {
     return 0;
   }
   const contestRef = db.collection('contests').doc(contest.id.toString())
@@ -79,26 +78,29 @@ async function loadProblem(problem) {
   return 1;
 }
 
-async function loadContestDetails(contestId) {
-  console.log(`Fetching details of contest: ${contestId}`);
+// TODO: bundle into histogram buckets.
+async function loadContestDetails(snap) {
+  const contest = snap.data();
+  if (contest.type !== 'CF') return
+
+  console.log(`Fetching details of contest: ${contest.id}`);
   const response = await axios.get('https://codeforces.com/api/contest.standings'
-    + `?contestId=${contestId}&showUnofficial=false`);
+    + `?contestId=${contest.id}&showUnofficial=false`);
   const result = response.data.result;
 
-  const contestDetailsRef = db.collection('contests').doc(contestId)
-    .collection('details').doc('scores');
-
   const maxPoints = _.sumBy(result.problems, (problem) => problem.points);
+  const bucketSize = maxPoints / contestScoreHistogramBucketsNum;
   const points = _(result.rows)
     .chain()
     .filter((row) => row.party.participantType = 'CONTESTANT')
-    .map((row) => row.points)
+    .map((row) => Math.floor(row.points / bucketSize))
     .value();
   const pointDistribution = _.countBy(points, _.identity);
-  console.log(`Contest ${contestId}: participants: ${points.length}, diff scores: ${_.keys(pointDistribution).length}`);
+  console.log(`Contest ${contest.id}, participants: ${result.rows.length}, active buckets: ${_.keys(pointDistribution).length}`);
 
-  await contestDetailsRef.set({
+  await snap.ref.update({
     maxPoints: maxPoints,
+    bucketSize: bucketSize,
     pointDistribution: pointDistribution
   });
 }
