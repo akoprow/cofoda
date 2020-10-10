@@ -11,10 +11,17 @@ const rateLimit = require('axios-rate-limit');
 // ---- Constants
 // -----------------------------------------------------------------------------
 const contestScoreHistogramBucketsNum = 50;
-const concurrencyLimits = {
-  maxProblemsLoadingInParallel: 10,
-  maxContestsLoadingInParallel: 10
+const codeforces = {
+  concurrency: {
+    maxProblemsLoadingInParallel: 10,
+    maxContestsLoadingInParallel: 10
+  },
+  maxContestsInOneBatch: 100,
+  forbiddenContests: [
+    693, 726, 728, 826, 857, 874, 885, 905, 1048, 1049, 1050, 1094, 1222, 1224, 1226, 1258
+  ]
 }
+const forbiddenContests = [];
 
 // -----------------------------------------------------------------------------
 // ---- Globals
@@ -22,7 +29,31 @@ const concurrencyLimits = {
 
 admin.initializeApp();
 const db = admin.firestore();
-const http = rateLimit(axios.create(), { maxRPS: 3 })
+const http = rateLimit(axios.create(), { maxRPS: 5 })
+
+// -----------------------------------------------------------------------------
+// ---- ret
+// -----------------------------------------------------------------------------
+
+const ret = {
+  nothing: {
+    results: 0,
+    errors: []
+  },
+  error: (err) => ({
+    results: 0,
+    errors: [err]
+  }),
+  result: {
+    results: 1,
+    errors: []
+  },
+  combine: (r1, r2) => ({
+    results: r1.results + r2.results,
+    errors: [...r1.errors, ...r2.errors]
+  }),
+  toString: (r) => `#${r.results}` + ((r.errors.length === 0) ? '' : `, errors: ${r.errors}`)
+};
 
 // -----------------------------------------------------------------------------
 // ---- Entry points
@@ -32,7 +63,10 @@ exports.loadData = functions.runWith({timeoutSeconds: 540}).https
 .onRequest(async (req, res) => {
   const newContests = await loadAllContests();
   const newProblems = await loadAllProblems();
-  res.json({newContests: newContests, newProblems: newProblems});
+  res.json({
+    newContests: ret.toString(newContests),
+    newProblems: ret.toString(newProblems)
+  });
 });
 
 // -----------------------------------------------------------------------------
@@ -42,33 +76,55 @@ exports.loadData = functions.runWith({timeoutSeconds: 540}).https
 async function loadAllContests() {
   const response = await http.get('https://codeforces.com/api/contest.list?gym=false');
   const contests = response.data.result;
-  functions.logger.log(`Fetched contests #: ${contests.length}`);
+  const toLoad = await async.filterLimit(
+      contests, codeforces.concurrency.maxContestsLoadingInParallel, needToLoadContest);
 
-  const newContests = await async.mapLimit(contests, concurrencyLimits.maxContestsLoadingInParallel, loadContest);
-  const numNewContests = newContests.reduce((a, b) => a + b, 0);
-  functions.logger.log(`Processed new contests #: ${numNewContests}`);
-  return numNewContests;
+  console.log(`Fetched contests: ${contests.length}, need loading: ${toLoad.length}`);
+  const newContests = await async.mapLimit(
+      _.take(toLoad, codeforces.maxContestsInOneBatch),
+      codeforces.concurrency.maxContestsLoadingInParallel,
+      loadContest);
+
+  const processed = newContests.reduce(ret.combine, ret.nothing);
+  functions.logger.log(`Contests fetched: ${contests.length}, need loading: ${toLoad.length}, loaded: ${ret.toString(processed)}`);
+  return processed;
+}
+
+async function needToLoadContest(contest) {
+  try {
+    if (contest.phase !== 'FINISHED') return false;
+    if (codeforces.forbiddenContests.includes(contest.id)) return false;
+
+    const contestRef = db.collection('contests').doc(contest.id.toString())
+    const contestData = await contestRef.get();
+    return !contestData.exists;
+
+  } catch (error) {
+    functions.logger.error(`Error needToLoadContest contest: ${contest.id}: ${error}`);
+    return false;
+  }
 }
 
 async function loadContest(contest) {
-  if (contest.phase !== 'FINISHED') {
-    return 0;
-  }
-  const contestRef = db.collection('contests').doc(contest.id.toString())
-  if ((await contestRef.get()).exists) {
-    return 0;
-  }
+  try {
+    console.log(`Loading new contest: ${contest.id}`);
 
-  console.log(`Found new contest: ${contest.id}`);
-  await contestRef.set(contest);
-  if (contest.type === 'CF') {
-    await loadContestDetails(contest, contestRef);
+    const contestRef = db.collection('contests').doc(contest.id.toString())
+    if (contest.type === 'CF') {
+      contest.details = await getContestDetails(contest, contestRef);
+    }
+
+    await contestRef.set(contest);
+    console.log(`Finished processing new contest: ${contest.id}`);
+    return ret.result;
+
+  } catch (error) {
+    functions.logger.error(`Error fetching contest: ${contest.id}: ${error}`);
+    return ret.error(contest.id);
   }
-  console.log(`Finished processing new contest: ${contest.id}`);
-  return 1;
 }
 
-async function loadContestDetails(contest, contestRef) {
+async function getContestDetails(contest, contestRef) {
   console.log(`Fetching details of contest: ${contest.id}`);
   const response = await http.get('https://codeforces.com/api/contest.standings'
     + `?contestId=${contest.id}&showUnofficial=false`);
@@ -84,11 +140,11 @@ async function loadContestDetails(contest, contestRef) {
   const pointDistribution = _.countBy(points, _.identity);
   console.log(`Contest ${contest.id}, participants: ${result.rows.length}, active buckets: ${_.keys(pointDistribution).length}`);
 
-  await contestRef.update({
+  return {
     maxPoints: maxPoints,
     bucketSize: bucketSize,
     pointDistribution: pointDistribution
-  });
+  };
 }
 
 // -----------------------------------------------------------------------------
@@ -98,23 +154,33 @@ async function loadContestDetails(contest, contestRef) {
 async function loadAllProblems() {
   const response = await http.get('https://codeforces.com/api/problemset.problems');
   const problems = response.data.result.problems;
-  functions.logger.log(`Fetched # problems: ${problems.length}`);
+  console.log(`Fetched # problems: ${problems.length}`);
 
-  const newProblems = await async.mapLimit(problems, concurrencyLimits.maxProblemsLoadingInParallel, loadProblem);
-  const numNewProblems = newProblems.reduce((a, b) => a + b, 0);
-  functions.logger.log(`Processed new problems #: ${numNewProblems}`);
-  return numNewProblems;
+  const newProblems = await async.mapLimit(
+      problems,
+      codeforces.concurrency.maxProblemsLoadingInParallel,
+      loadProblem);
+
+  const processed = newProblems.reduce(ret.combine, ret.nothing);
+  functions.logger.log(`Problems fetched: ${problems.length}, loaded: ${ret.toString(processed)}`);
+  return processed;
 }
 
 async function loadProblem(problem) {
-  const problemId = problem.contestId + problem.index;
-  const problemRef = db.collection('problems').doc(problemId);
-  if ((await problemRef.get()).exists) {
-    return 0;
-  }
+  try {
+    const problemId = problem.contestId + problem.index;
+    const problemRef = db.collection('problems').doc(problemId);
+    if ((await problemRef.get()).exists) {
+      return ret.nothing;
+    }
 
-  console.log(`Found new problem: ${problemId}`);
-  await problemRef.set(problem);
-  console.log(`Finished processing new problem: ${problemId}`);
-  return 1;
+    console.log(`Found new problem: ${problemId}`);
+    await problemRef.set(problem);
+    console.log(`Finished processing new problem: ${problemId}`);
+    return ret.result;
+
+  } catch (error) {
+    functions.logger.error(`Error fetching problem: ${problem.id}: ${error}`);
+    return ret.error(problem.id);
+  }
 }
