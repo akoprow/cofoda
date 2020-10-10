@@ -18,7 +18,8 @@ const codeforces = {
   },
   maxContestsInOneBatch: 100,
   forbiddenContests: [
-    693, 726, 728, 826, 857, 874, 885, 905, 1048, 1049, 1050, 1094, 1222, 1224, 1226, 1258
+    693, 726, 728, 826, 857, 874, 885, 905, 1048, 1049, 1050, 1094, 1222, 1224,
+    1226, 1258
   ]
 }
 const forbiddenContests = [];
@@ -108,11 +109,8 @@ async function needToLoadContest(contest) {
 async function loadContest(contest) {
   try {
     console.log(`Loading new contest: ${contest.id}`);
-
     const contestRef = db.collection('contests').doc(contest.id.toString())
-    if (contest.type === 'CF') {
-      contest.details = await getContestDetails(contest, contestRef);
-    }
+    contest.details = await getContestDetails(contest, contestRef);
 
     await contestRef.set(contest);
     console.log(`Finished processing new contest: ${contest.id}`);
@@ -129,22 +127,27 @@ async function getContestDetails(contest, contestRef) {
   const response = await http.get('https://codeforces.com/api/contest.standings'
     + `?contestId=${contest.id}&showUnofficial=false`);
   const result = response.data.result;
+  const details = { problems: result.problems };
 
-  const maxPoints = _.sumBy(result.problems, (problem) => problem.points);
-  const bucketSize = maxPoints / contestScoreHistogramBucketsNum;
-  const points = _(result.rows)
-    .chain()
-    .filter((row) => row.party.participantType = 'CONTESTANT')
-    .map((row) => Math.floor(row.points / bucketSize))
-    .value();
-  const pointDistribution = _.countBy(points, _.identity);
-  console.log(`Contest ${contest.id}, participants: ${result.rows.length}, active buckets: ${_.keys(pointDistribution).length}`);
+  if (contest.type === 'CF') {
+    const maxPoints = _.sumBy(result.problems, (problem) => problem.points);
+    const bucketSize = maxPoints / contestScoreHistogramBucketsNum;
+    const points = _(result.rows)
+      .chain()
+      .filter((row) => row.party.participantType = 'CONTESTANT')
+      .map((row) => Math.floor(row.points / bucketSize))
+      .value();
+    const pointDistribution = _.countBy(points, _.identity);
+    console.log(`Contest ${contest.id}, participants: ${result.rows.length}, active buckets: ${_.keys(pointDistribution).length}`);
+    const scores = {
+      maxPoints: maxPoints,
+      bucketSize: bucketSize,
+      pointDistribution: pointDistribution
+    };
+    details.scores = scores;
+  }
 
-  return {
-    maxPoints: maxPoints,
-    bucketSize: bucketSize,
-    pointDistribution: pointDistribution
-  };
+  return details;
 }
 
 // -----------------------------------------------------------------------------
