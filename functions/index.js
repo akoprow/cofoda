@@ -5,16 +5,28 @@ const functions = require('firebase-functions');
 const axios = require('axios');
 const admin = require('firebase-admin');
 const async = require("async");
+const rateLimit = require('axios-rate-limit');
 
-admin.initializeApp();
-const db = admin.firestore();
-
+// -----------------------------------------------------------------------------
+// ---- Constants
+// -----------------------------------------------------------------------------
 const contestScoreHistogramBucketsNum = 50;
-
 const concurrencyLimits = {
   maxProblemsLoadingInParallel: 10,
   maxContestsLoadingInParallel: 10
 }
+
+// -----------------------------------------------------------------------------
+// ---- Globals
+// -----------------------------------------------------------------------------
+
+admin.initializeApp();
+const db = admin.firestore();
+const http = rateLimit(axios.create(), { maxRPS: 3 })
+
+// -----------------------------------------------------------------------------
+// ---- Entry points
+// -----------------------------------------------------------------------------
 
 exports.loadData = functions.runWith({timeoutSeconds: 540}).https
 .onRequest(async (req, res) => {
@@ -23,8 +35,12 @@ exports.loadData = functions.runWith({timeoutSeconds: 540}).https
   res.json({newContests: newContests, newProblems: newProblems});
 });
 
+// -----------------------------------------------------------------------------
+// ---- Contests
+// -----------------------------------------------------------------------------
+
 async function loadAllContests() {
-  const response = await axios.get('https://codeforces.com/api/contest.list?gym=false');
+  const response = await http.get('https://codeforces.com/api/contest.list?gym=false');
   const contests = response.data.result;
   functions.logger.log(`Fetched contests #: ${contests.length}`);
 
@@ -54,7 +70,7 @@ async function loadContest(contest) {
 
 async function loadContestDetails(contest, contestRef) {
   console.log(`Fetching details of contest: ${contest.id}`);
-  const response = await axios.get('https://codeforces.com/api/contest.standings'
+  const response = await http.get('https://codeforces.com/api/contest.standings'
     + `?contestId=${contest.id}&showUnofficial=false`);
   const result = response.data.result;
 
@@ -75,8 +91,12 @@ async function loadContestDetails(contest, contestRef) {
   });
 }
 
+// -----------------------------------------------------------------------------
+// ---- Problems
+// -----------------------------------------------------------------------------
+
 async function loadAllProblems() {
-  const response = await axios.get('https://codeforces.com/api/problemset.problems');
+  const response = await http.get('https://codeforces.com/api/problemset.problems');
   const problems = response.data.result.problems;
   functions.logger.log(`Fetched # problems: ${problems.length}`);
 
