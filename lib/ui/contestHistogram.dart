@@ -25,10 +25,8 @@ class ContestHistogram extends StatelessWidget {
       return null;
     }
     final points = contest.results.pointDistribution;
-    final pointsAt =
-        (int index) => points.containsKey(index) ? points[index] : 0;
     final data = List.generate(
-        25, (index) => pointsAt(2 * index) + pointsAt(2 * index + 1));
+        25, (index) => points.containsKey(index) ? points[index] : 0);
     final hist = charts.Series<int, String>(
       id: 'Contest results',
       domainFn: (_, int index) => index.toString(),

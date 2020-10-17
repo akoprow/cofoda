@@ -10,8 +10,7 @@ const rateLimit = require('axios-rate-limit');
 // -----------------------------------------------------------------------------
 // ---- Constants
 // -----------------------------------------------------------------------------
-const contestScoreHistogramBucketsNum = 50;
-const codeforces = {
+const config = {
   concurrency: {
     maxProblemsLoadingInParallel: 10,
     maxContestsLoadingInParallel: 10
@@ -19,6 +18,7 @@ const codeforces = {
   batchLimits: {
     maxContestsInOneBatch: 100,
   },
+  contestScoreHistogramBucketsNum: 25,
   forbiddenContests: [
     693, 726, 728, 826, 857, 874, 885, 905, 1048, 1049, 1050, 1094, 1222, 1224,
     1226, 1258
@@ -80,12 +80,12 @@ async function loadAllContests() {
   const response = await http.get('https://codeforces.com/api/contest.list?gym=false');
   const contests = response.data.result;
   const toLoad = await async.filterLimit(
-      contests, codeforces.concurrency.maxContestsLoadingInParallel, needToLoadContest);
+      contests, config.concurrency.maxContestsLoadingInParallel, needToLoadContest);
 
   console.log(`Fetched contests: ${contests.length}, need loading: ${toLoad.length}`);
   const newContests = await async.mapLimit(
-      _.take(toLoad, codeforces.batchLimits.maxContestsInOneBatch),
-      codeforces.concurrency.maxContestsLoadingInParallel,
+      _.take(toLoad, config.batchLimits.maxContestsInOneBatch),
+      config.concurrency.maxContestsLoadingInParallel,
       loadContest);
 
   const processed = newContests.reduce(ret.combine, ret.nothing);
@@ -96,7 +96,7 @@ async function loadAllContests() {
 async function needToLoadContest(contest) {
   try {
     if (contest.phase !== 'FINISHED') return false;
-    if (codeforces.forbiddenContests.includes(contest.id)) return false;
+    if (config.forbiddenContests.includes(contest.id)) return false;
 
     const contestRef = db.collection('contests').doc(contest.id.toString())
     const contestData = await contestRef.get();
@@ -133,11 +133,11 @@ async function getContestDetails(contest, contestRef) {
 
   if (contest.type === 'CF') {
     const maxPoints = _.sumBy(result.problems, (problem) => problem.points);
-    const bucketSize = maxPoints / contestScoreHistogramBucketsNum;
+    const bucketSize = maxPoints / config.contestScoreHistogramBucketsNum;
     const points = _(result.rows)
       .chain()
       .filter((row) => row.party.participantType = 'CONTESTANT')
-      .map((row) => Math.floor(row.points / bucketSize))
+      .map((row) => Math.max(0, Math.floor(row.points / bucketSize)))
       .value();
     const pointDistribution = _.countBy(points, _.identity);
     console.log(`Contest ${contest.id}, participants: ${result.rows.length}, active buckets: ${_.keys(pointDistribution).length}`);
@@ -163,7 +163,7 @@ async function loadAllProblems() {
 
   const newProblems = await async.mapLimit(
       problems,
-      codeforces.concurrency.maxProblemsLoadingInParallel,
+      config.concurrency.maxProblemsLoadingInParallel,
       loadProblem);
 
   const processed = newProblems.reduce(ret.combine, ret.nothing);
