@@ -1,23 +1,20 @@
-import 'package:cofoda/codeforcesAPI.dart';
 import 'package:cofoda/main.dart';
 import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/problem.dart';
-import 'package:cofoda/ui/problemWidget.dart';
 import 'package:flutter/material.dart';
-
-import 'chip2.dart';
 
 class ContestListTileWidget extends StatelessWidget {
   final String _user;
   final String _vsUser;
   final Contest _contest;
-  final Data _data;
   final int _ratingLimit;
 
   ContestListTileWidget(
-      {@required String user, @required Contest contest, @required Data data, int ratingLimit, String vsUser})
-      : _data = data,
-        _user = user,
+      {@required String user,
+      @required Contest contest,
+      int ratingLimit,
+      String vsUser})
+      : _user = user,
         _vsUser = vsUser,
         _ratingLimit = ratingLimit,
         _contest = contest;
@@ -38,7 +35,7 @@ class ContestListTileWidget extends StatelessWidget {
   }
 
   List<StatelessWidget> _showProblems() {
-    return _contest.problems.map(_showProblem).toList().reversed.toList();
+    return _contest.problems.map(_showProblem).toList();
   }
 
   StatelessWidget _showProblem(Problem problem) {
@@ -47,6 +44,8 @@ class ContestListTileWidget extends StatelessWidget {
   }
 
   Widget _buildCard(Problem problem) {
+    return Chip(label: Text(problem.index), backgroundColor: Colors.grey[200]);
+    /*
     final color1 = problemStatusToColor(_user, _data, problem, ratingLimit: _ratingLimit);
     if (_vsUser == null) {
       return Chip(label: Text(problem.index), backgroundColor: color1);
@@ -55,5 +54,6 @@ class ContestListTileWidget extends StatelessWidget {
       return Chip2(
           label: Text('${problem.index} | ${problem.index}'), backgroundColor: color1, secondBackgroundColor: color2);
     }
+    */
   }
 }

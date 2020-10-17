@@ -18,10 +18,33 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <!-- This script installs service_worker.js to provide PWA functionality to
-       application. For more information, see:
-       https://developers.google.com/web/fundamentals/primers/service-workers -->
-  <script>
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-app.js"></script>
+<!-- TODO: Add SDKs for Firebase products that you want to use
+   https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/7.24.0/firebase-analytics.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/7.24.0/firebase-firestore.js"></script>
+
+<script>
+  var firebaseConfig = {
+    apiKey: "AIzaSyCa2fg0Ui9oci3Ax8G1kjuU7PzZReMg_f4",
+    authDomain: "cofoda-b53b0.firebaseapp.com",
+    databaseURL: "https://cofoda-b53b0.firebaseio.com",
+    projectId: "cofoda-b53b0",
+    storageBucket: "cofoda-b53b0.appspot.com",
+    messagingSenderId: "95619617777",
+    appId: "1:95619617777:web:83019d744985bd0cd62a50",
+    measurementId: "G-WXR9TEPM3M"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+
+</script>
+
+<!-- This script installs service_worker.js to provide PWA functionality to
+     application. For more information, see:
+     https://developers.google.com/web/fundamentals/primers/service-workers -->
+<script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('flutter_service_worker.js');

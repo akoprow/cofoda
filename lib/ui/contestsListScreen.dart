@@ -1,11 +1,11 @@
 import 'dart:core';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cofoda/codeforcesAPI.dart';
 import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/submissions.dart';
 import 'package:cofoda/ui/contestListTileWidget.dart';
 import 'package:cofoda/ui/problemWidget.dart';
-import 'package:cofoda/ui/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -14,86 +14,36 @@ import 'package:flutter/widgets.dart';
  * TODO:
  * - refactor data into a common provider.
  */
-
-class ContestsListScreen extends StatelessWidget {
-  final String user;
-  final String vsUser;
-  final String filter;
-  final int ratingLimit;
-
-  ContestsListScreen({this.user, this.vsUser, this.ratingLimit, this.filter});
-
-  @override
-  Widget build(BuildContext context) => showFuture(
-      CodeforcesAPI().load(users: [user, vsUser]),
-      (Data data) => LoadedContestsListWidget(
-          data: data,
-          ratingLimit: ratingLimit,
-          filter: filter,
-          user: user,
-          vsUser: vsUser));
-}
-
-class LoadedContestsListWidget extends StatelessWidget {
+class ContestsListWidget extends StatelessWidget {
   final String _user;
   final String _vsUser;
-  final Data _data;
+  final String _filter;
   final int _ratingLimit;
-  final List<Contest> _allContests;
-  final List<Contest> _contests;
-  final Widget _stats;
 
-  LoadedContestsListWidget.withContests(this._contests,
-      {Key key,
-        @required Data data,
-        int ratingLimit,
-        @required String filter,
-        @required String user,
-        String vsUser})
-      : _data = data,
-        _user = user,
+  const ContestsListWidget(
+      {Key key, String user, String vsUser, String filter, int ratingLimit})
+      : _user = user,
         _vsUser = vsUser,
+        _filter = filter,
         _ratingLimit = ratingLimit,
-        _allContests = data.contestList.allContests,
-        _stats = _generateProblemStats(_contests,
-            data: data, ratingLimit: ratingLimit, user: user, vsUser: vsUser),
         super(key: key);
 
-  LoadedContestsListWidget({Key key,
-    @required Data data,
-    int ratingLimit,
-    String filter,
-    String user,
-    String vsUser})
-      : this.withContests(
-      _filterContests(user, data, filter, ratingLimit: ratingLimit),
-      key: key,
-      data: data,
-      filter: filter,
-      ratingLimit: ratingLimit,
-      user: user,
-      vsUser: vsUser);
-
-  static List<Contest> _filterContests(String user, Data data, String filter,
-      {int ratingLimit}) {
-    return data.contestList.allContests
-        .where(_getContestFilter(user, data, filter, ratingLimit: ratingLimit))
-        .toList();
-  }
-
-  static bool Function(Contest) _getContestFilter(String user, Data data,
-      String filter,
-      {int ratingLimit}) {
-    return (Contest contest) {
+  static List<Contest> _filterContests(List<Contest> contests) {
+    final contestFilter = (Contest contest) {
+      /*
       final statuses = contest.problems
-          .map((p) => data.statusOfProblem(user, p, ratingLimit: ratingLimit))
+          .map((p) => statusOfProblem(user, p, ratingLimit: ratingLimit))
           .toList();
       return statuses.any(_getContestStatusPredicate(data, filter));
+       */
+      return true;
     };
+
+    return contests.where(contestFilter).toList();
   }
 
-  static bool Function(ProblemStatus) _getContestStatusPredicate(Data data,
-      String filter) {
+  static bool Function(ProblemStatus) _getContestStatusPredicate(
+      Data data, String filter) {
     if (filter == null) return (status) => true;
     return (ProblemStatus s) {
       switch (filter) {
@@ -111,44 +61,33 @@ class LoadedContestsListWidget extends StatelessWidget {
     };
   }
 
-  static Map<ProblemStatus, int> _computeStatsForUser(
-      {@required List<Contest> contests,
-        @required Data data,
-        @required String user,
-        @required int ratingLimit}) {
+  Map<ProblemStatus, int> _computeStatsForUser(List<Contest> contests) {
+    return {};
+    /*
     final statuses = contests
-        .map((contest) =>
-        contest.problems.map((problem) =>
+        .map((contest) => contest.problems.map((problem) =>
             data.statusOfProblem(user, problem, ratingLimit: ratingLimit)))
         .expand((x) => x)
         .toList();
     return Map.fromIterables(
         ProblemStatus.values,
         ProblemStatus.values
-            .map((status) =>
-        statuses
-            .where((s) => s == status)
-            .length));
+            .map((status) => statuses.where((s) => s == status).length));
+     */
   }
 
-  static Widget _generateProblemStats(List<Contest> contests,
-      {Data data, int ratingLimit, String user, String vsUser}) {
-    final statsForUser = (String forUser) =>
-        _computeStatsForUser(
-            contests: contests,
-            data: data,
-            user: forUser,
-            ratingLimit: ratingLimit);
-    final stats = statsForUser(user);
-    final vsStats = vsUser != null ? statsForUser(vsUser) : null;
-    final usersLabel = vsUser == null ? user : '${user} | ${vsUser}';
+  Widget _generateProblemStats(List<Contest> contests) {
+    final statsForUser = (String forUser) => _computeStatsForUser(contests);
+    final stats = statsForUser(_user);
+    final vsStats = _vsUser != null ? statsForUser(_vsUser) : null;
+    final usersLabel = _vsUser == null ? _user : '${_user} | ${_vsUser}';
     return ListTile(
         leading: Text(usersLabel),
         title: Row(children: _renderStats(stats, vsStats)));
   }
 
-  static List<Widget> _renderStats(Map<ProblemStatus, int> stats,
-      Map<ProblemStatus, int> vsStats) {
+  static List<Widget> _renderStats(
+      Map<ProblemStatus, int> stats, Map<ProblemStatus, int> vsStats) {
     final numbersForStatus = (List<ProblemStatus> statuses) {
       final sumFor = (Map<ProblemStatus, int> stats) =>
           statuses.map((status) => stats[status]).reduce((a, b) => a + b);
@@ -157,13 +96,12 @@ class LoadedContestsListWidget extends StatelessWidget {
           ? userNum.toString()
           : '${userNum} | ${sumFor(vsStats)}';
     };
-    final Widget Function(ProblemStatus) renderStatus = (status) =>
-        Padding(
-            padding: EdgeInsets.only(right: 5),
-            child: Chip(
-              label: Text(numbersForStatus([status])),
-              backgroundColor: statusToColor(status),
-            ));
+    final Widget Function(ProblemStatus) renderStatus = (status) => Padding(
+        padding: EdgeInsets.only(right: 5),
+        child: Chip(
+          label: Text(numbersForStatus([status])),
+          backgroundColor: statusToColor(status),
+        ));
     final solvedLive = numbersForStatus([ProblemStatus.solvedLive]);
     final solvedVirtual = numbersForStatus([ProblemStatus.solvedVirtual]);
     final solvedPractice = numbersForStatus([ProblemStatus.solvedPractice]);
@@ -180,25 +118,48 @@ class LoadedContestsListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final summaryText = (_allContests.length == _contests.length)
-        ? 'Displaying all ${_contests.length} contests'
-        : 'Displaying ${_contests.length}/${_allContests.length} contests';
+    final Query contests = FirebaseFirestore.instance
+        .collection('contests')
+        .orderBy('startTimeSeconds', descending: true);
+
+    return StreamBuilder<QuerySnapshot>(
+        stream: contests.snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Text(':(');
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          }
+
+          return _show(snapshot.data.docs);
+        });
+  }
+
+  Widget _show(List<QueryDocumentSnapshot> fireContests) {
+    final allContests = fireContests.map((c) => Contest.fromFire(c)).toList();
+    final contests = _filterContests(allContests);
+
+    final summaryText = (allContests.length == contests.length)
+        ? 'Displaying all ${contests.length} contests'
+        : 'Displaying ${contests.length}/${allContests.length} contests';
+    final stats = Container(); // TODO _generateProblemStats(contests);
     final topBar =
-    Card(child: ListTile(title: _stats, subtitle: Text(summaryText)));
+        Card(child: ListTile(title: stats, subtitle: Text(summaryText)));
     final topBarSliver = SliverList(
         delegate:
-        SliverChildBuilderDelegate((context, i) => topBar, childCount: 1));
-    final contests = SliverList(
+            SliverChildBuilderDelegate((context, i) => topBar, childCount: 1));
+    final contestsWidget = SliverList(
         delegate: SliverChildBuilderDelegate(
-              (context, i) =>
-              ContestListTileWidget(
-                  user: _user,
-                  vsUser: _vsUser,
-                  contest: _contests[i],
-                  data: _data,
-                  ratingLimit: _ratingLimit),
-          childCount: _contests.length,
-        ));
-    return Scaffold(body: CustomScrollView(slivers: [topBarSliver, contests]));
+      (context, i) => ContestListTileWidget(
+          user: _user,
+          vsUser: _vsUser,
+          contest: contests[i],
+          ratingLimit: _ratingLimit),
+      childCount: contests.length,
+    ));
+    return Scaffold(
+        body: CustomScrollView(slivers: [topBarSliver, contestsWidget]));
   }
 }

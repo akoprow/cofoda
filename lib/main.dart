@@ -1,12 +1,37 @@
-import 'package:cofoda/ui/contestDetailsWidget.dart';
 import 'package:cofoda/ui/contestsListScreen.dart';
-import 'package:cofoda/ui/problemsListScreen.dart';
-import 'package:cofoda/ui/userDetailsWidget.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:fluro/fluro.dart' as fluro;
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(AppComponent());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(Initialize(body: AppComponent()));
+}
+
+class Initialize extends StatelessWidget {
+  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
+  final Widget body;
+
+  Initialize({Key key, @required this.body}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: _initialization,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Text(':(');
+          }
+
+          if (snapshot.connectionState == ConnectionState.done) {
+            return body;
+          }
+
+          return Center(
+              child: Container(
+                  child: CircularProgressIndicator(), width: 32, height: 32));
+        });
+  }
 }
 
 class AppComponent extends StatefulWidget {
@@ -30,21 +55,17 @@ class AppComponentState extends State<AppComponent> {
   static const String routeSingleContest =
       '$routeSingleContestPrefix:$contestIdParam';
 
-  static final router = fluro.Router();
+  static final router = fluro.FluroRouter();
 
   AppComponentState() {
-    router.define(routeRoot, handler: _problemsHandler());
+    router.define(routeRoot, handler: _allContestsHandler());
+    router.define(routeAllContests, handler: _allContestsHandler());
+/*
     router.define(routeUser, handler: _userHandler());
     router.define(routeProblems, handler: _problemsHandler());
-    router.define(routeAllContests, handler: _allContestsHandler());
     router.define(routeSingleContest, handler: _singleContestsHandler());
+*/
   }
-
-  fluro.Handler _problemsHandler() => fluro.Handler(handlerFunc:
-          (BuildContext context, Map<String, List<String>> params) {
-        final String user = params[userQueryParam]?.first;
-        return ProblemsListScreenWidget(user: user);
-      });
 
   fluro.Handler _allContestsHandler() => fluro.Handler(handlerFunc:
           (BuildContext context, Map<String, List<String>> params) {
@@ -52,11 +73,18 @@ class AppComponentState extends State<AppComponent> {
         final String vsUser = params[vsUserQueryParam]?.first;
         final String ratingLimit = params[ratingLimitParam]?.first;
         final String filter = params[filterParam]?.first;
-        return ContestsListScreen(
+        return ContestsListWidget(
             user: user,
             vsUser: vsUser,
             filter: filter,
             ratingLimit: ratingLimit == null ? null : int.parse(ratingLimit));
+      });
+
+  /*
+  fluro.Handler _problemsHandler() => fluro.Handler(handlerFunc:
+          (BuildContext context, Map<String, List<String>> params) {
+        final String user = params[userQueryParam]?.first;
+        return ProblemsListScreenWidget(user: user);
       });
 
   fluro.Handler _singleContestsHandler() => fluro.Handler(handlerFunc:
@@ -72,6 +100,7 @@ class AppComponentState extends State<AppComponent> {
         final String vsUser = params[vsUserQueryParam]?.first;
         return UserDetailsWidget(users: [user, vsUser]);
       });
+  */
 
   @override
   Widget build(BuildContext context) {
