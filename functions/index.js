@@ -16,7 +16,9 @@ const codeforces = {
     maxProblemsLoadingInParallel: 10,
     maxContestsLoadingInParallel: 10
   },
-  maxContestsInOneBatch: 100,
+  batchLimits: {
+    maxContestsInOneBatch: 100,
+  },
   forbiddenContests: [
     693, 726, 728, 826, 857, 874, 885, 905, 1048, 1049, 1050, 1094, 1222, 1224,
     1226, 1258
@@ -63,10 +65,10 @@ const ret = {
 exports.loadData = functions.runWith({timeoutSeconds: 540}).https
 .onRequest(async (req, res) => {
   const newContests = await loadAllContests();
-  const newProblems = await loadAllProblems();
+  // const newProblems = await loadAllProblems();
   res.json({
-    newContests: ret.toString(newContests),
-    newProblems: ret.toString(newProblems)
+    newContests: ret.toString(newContests)
+    // newProblems: ret.toString(newProblems)
   });
 });
 
@@ -82,7 +84,7 @@ async function loadAllContests() {
 
   console.log(`Fetched contests: ${contests.length}, need loading: ${toLoad.length}`);
   const newContests = await async.mapLimit(
-      _.take(toLoad, codeforces.maxContestsInOneBatch),
+      _.take(toLoad, codeforces.batchLimits.maxContestsInOneBatch),
       codeforces.concurrency.maxContestsLoadingInParallel,
       loadContest);
 
