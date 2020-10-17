@@ -18,7 +18,10 @@ const config = {
   batchLimits: {
     maxContestsInOneBatch: 100,
   },
-  contestScoreHistogramBucketsNum: 25,
+  contestHistogram: {
+    maxBuckets: 25,
+    maxScore: 0.5  // expressed as max points to be scored in the contest
+  },
   forbiddenContests: [
     693, 726, 728, 826, 857, 874, 885, 905, 1048, 1049, 1050, 1094, 1222, 1224,
     1226, 1258
@@ -62,8 +65,10 @@ const ret = {
 // ---- Entry points
 // -----------------------------------------------------------------------------
 
-exports.loadData = functions.runWith({timeoutSeconds: 540}).https
-.onRequest(async (req, res) => {
+exports.loadData = functions.runWith({
+  timeoutSeconds: 540,
+  memory: '1GB'
+}).https.onRequest(async (req, res) => {
   const newContests = await loadAllContests();
   // const newProblems = await loadAllProblems();
   res.json({
@@ -133,11 +138,14 @@ async function getContestDetails(contest, contestRef) {
 
   if (contest.type === 'CF') {
     const maxPoints = _.sumBy(result.problems, (problem) => problem.points);
-    const bucketSize = maxPoints / config.contestScoreHistogramBucketsNum;
+    const bucketSize = maxPoints * config.contestHistogram.maxScore / config.contestHistogram.maxBuckets;
     const points = _(result.rows)
       .chain()
       .filter((row) => row.party.participantType = 'CONTESTANT')
-      .map((row) => Math.max(0, Math.floor(row.points / bucketSize)))
+      .map((row) =>
+          Math.min(config.contestHistogram.maxBuckets-1,
+            Math.max(0,
+              Math.floor(row.points / bucketSize))))
       .value();
     const pointDistribution = _.countBy(points, _.identity);
     console.log(`Contest ${contest.id}, participants: ${result.rows.length}, active buckets: ${_.keys(pointDistribution).length}`);
