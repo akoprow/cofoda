@@ -3,6 +3,8 @@ import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/problem.dart';
 import 'package:flutter/material.dart';
 
+import 'contestHistogram.dart';
+
 class ContestListTileWidget extends StatelessWidget {
   final String _user;
   final String _vsUser;
@@ -23,14 +25,19 @@ class ContestListTileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final contestId = Chip(label: Text('#' + _contest.id.toString()));
     final contestName = Text('  ' + _contest.name);
+    final histogram = ContestHistogram(contest: _contest);
+    final elements = [contestId, contestName, Spacer(flex: 3)] +
+        _showProblems() +
+        [Container(width: 10), histogram];
     return Card(
         child: ListTile(
-            title: Row(children: [contestId, contestName, Spacer()] + _showProblems()),
+            title: Row(children: elements),
             onTap: () => _goToContest(context)));
   }
 
   Future<void> _goToContest(BuildContext context) async {
-    final routeName = AppComponentState.routeSingleContestPrefix + _contest.id.toString();
+    final routeName =
+        AppComponentState.routeSingleContestPrefix + _contest.id.toString();
     return Navigator.pushNamed(context, routeName);
   }
 
