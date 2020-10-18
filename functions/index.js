@@ -2,6 +2,7 @@
 
 const _ = require('lodash');
 const functions = require('firebase-functions');
+const {Firestore} = require('@google-cloud/firestore');
 const axios = require('axios');
 const admin = require('firebase-admin');
 const async = require("async");
@@ -22,6 +23,7 @@ const config = {
     maxBuckets: 25,
     maxScore: 0.5  // expressed as max points to be scored in the contest
   },
+  minUserRefreshTimeSeconds: 10,
   forbiddenContests: [
     693, 726, 728, 826, 857, 874, 885, 905, 1048, 1049, 1050, 1094, 1222, 1224,
     1226, 1258
@@ -36,6 +38,7 @@ const forbiddenContests = [];
 admin.initializeApp();
 const db = admin.firestore();
 const http = rateLimit(axios.create(), { maxRPS: 5 })
+const FieldValue = admin.firestore.FieldValue;
 
 // -----------------------------------------------------------------------------
 // ---- ret
@@ -65,16 +68,29 @@ const ret = {
 // ---- Entry points
 // -----------------------------------------------------------------------------
 
-exports.loadData = functions.runWith({
+exports.loadContests = functions.runWith({
   timeoutSeconds: 540,
   memory: '1GB'
 }).https.onRequest(async (req, res) => {
   const newContests = await loadAllContests();
-  // const newProblems = await loadAllProblems();
-  res.json({
-    newContests: ret.toString(newContests)
-    // newProblems: ret.toString(newProblems)
-  });
+  res.json({newContests: ret.toString(newContests)})
+});
+
+exports.loadProblems = functions.runWith({
+  timeoutSeconds: 540,
+  memory: '1GB'
+}).https.onRequest(async (req, res) => {
+  const newProblems = await loadAllProblems();
+  res.json({newProblems: ret.toString(newProblems)})
+});
+
+exports.loadUserData = functions.https.onRequest(async (req, res) => {
+  const user = req.query.user;
+  if (!user) {
+    res.json('Please provide <user> query param');
+  } else {
+    res.json(await loadUser(user));
+  }
 });
 
 // -----------------------------------------------------------------------------
@@ -196,4 +212,48 @@ async function loadProblem(problem) {
     functions.logger.error(`Error fetching problem: ${problem.id}: ${error}`);
     return ret.error(problem.id);
   }
+}
+
+// -----------------------------------------------------------------------------
+// ---- Users
+// -----------------------------------------------------------------------------
+
+async function loadUser(user) {
+  const userRef = db.collection('users').doc(user);
+  const userData = await userRef.get();
+
+  var numProcessed = 0;
+  if (userData.exists) {
+    const meta = userData.data().meta
+
+    const now = Firestore.Timestamp.now();
+    const lastUpdateSecAgo =
+        Firestore.Timestamp.now().seconds - meta.lastFetchTime.seconds;
+    if (lastUpdateSecAgo < config.minUserRefreshTimeSeconds) {
+        return {noUpdate: 'User data does not yet need a refresh'};
+    }
+
+    numProcessed = meta.numProcessed;
+    console.log(`Re-fetching user ${user} after ${lastUpdateSecAgo} seconds.`);
+  } else {
+    console.log(`First time fetching user ${user}.`);
+  }
+
+  const url = `https://codeforces.com/api/user.status?handle=${user}&from=${numProcessed+1}`;
+  console.log(`Fetching from: ${url}`);
+  const response = await http.get(url);
+  const data = response.data.result;
+
+  const newSubmissions = data.length;
+  await userRef.set({
+    meta: {
+      lastFetchTime: FieldValue.serverTimestamp(),
+      numProcessed: FieldValue.increment(newSubmissions)
+    }
+  });
+
+  return {
+    user: user,
+    newSubmissions: newSubmissions
+  };
 }
