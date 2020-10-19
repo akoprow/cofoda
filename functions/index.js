@@ -229,15 +229,29 @@ async function loadUser(user) {
   const data = response.data.result;
 
   const newSubmissions = data.length;
-  await userRef.set({
+  const newData = {
     meta: {
       numProcessed: FieldValue.increment(newSubmissions),
       timesFetched: FieldValue.increment(1),
-    }
-  }, {merge: true});
+    },
+    submissions: _.map(data, processSubmission)
+  };
+  await userRef.set(newData, {merge: true});
 
   return {
     user: user,
     newSubmissions: newSubmissions
+  };
+}
+
+function processSubmission(s) {
+  return {
+    id: s.id,
+    conestId: s.contestId,
+    problemIndex: s.problem.index,
+    participantType: s.author.participantType,
+    verdict: s.verdict,
+    timeConsumedMillis: s.timeConsumedMillis,
+    memoryConsumedBytes: s.memoryConsumedBytes
   };
 }
