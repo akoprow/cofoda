@@ -23,7 +23,6 @@ const config = {
     maxBuckets: 25,
     maxScore: 0.5  // expressed as max points to be scored in the contest
   },
-  minUserRefreshTimeSeconds: 10,
   forbiddenContests: [
     693, 726, 728, 826, 857, 874, 885, 905, 1048, 1049, 1050, 1094, 1222, 1224,
     1226, 1258
@@ -222,33 +221,18 @@ async function loadUser(user) {
   const userRef = db.collection('users').doc(user);
   const userData = await userRef.get();
 
-  var numProcessed = 0;
-  if (userData.exists) {
-    const meta = userData.data().meta
+  var from = 1 + (userData.exists) ? 1+userData.data().meta.numProcessed : 0;
+  console.log(`Fetching user ${user} starting from submission ${from}.`);
 
-    const now = Firestore.Timestamp.now();
-    const lastUpdateSecAgo =
-        Firestore.Timestamp.now().seconds - meta.lastFetchTime.seconds;
-    if (lastUpdateSecAgo < config.minUserRefreshTimeSeconds) {
-        return {noUpdate: 'User data does not yet need a refresh'};
-    }
-
-    numProcessed = meta.numProcessed;
-    console.log(`Re-fetching user ${user} after ${lastUpdateSecAgo} seconds.`);
-  } else {
-    console.log(`First time fetching user ${user}.`);
-  }
-
-  const url = `https://codeforces.com/api/user.status?handle=${user}&from=${numProcessed+1}`;
-  console.log(`Fetching from: ${url}`);
+  const url = `https://codeforces.com/api/user.status?handle=${user}&from=${first}`;
   const response = await http.get(url);
   const data = response.data.result;
 
   const newSubmissions = data.length;
   await userRef.set({
     meta: {
-      lastFetchTime: FieldValue.serverTimestamp(),
-      numProcessed: FieldValue.increment(newSubmissions)
+      numProcessed: FieldValue.increment(newSubmissions),
+      timesFetched: FieldValue.increment(1)
     }
   });
 
