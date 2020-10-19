@@ -221,10 +221,10 @@ async function loadUser(user) {
   const userRef = db.collection('users').doc(user);
   const userData = await userRef.get();
 
-  var from = 1 + (userData.exists) ? 1+userData.data().meta.numProcessed : 0;
+  const from = 1 + ((userData.exists) ? 1+userData.data().meta.numProcessed : 0);
   console.log(`Fetching user ${user} starting from submission ${from}.`);
 
-  const url = `https://codeforces.com/api/user.status?handle=${user}&from=${first}`;
+  const url = `https://codeforces.com/api/user.status?handle=${user}&from=${from}`;
   const response = await http.get(url);
   const data = response.data.result;
 
@@ -232,9 +232,9 @@ async function loadUser(user) {
   await userRef.set({
     meta: {
       numProcessed: FieldValue.increment(newSubmissions),
-      timesFetched: FieldValue.increment(1)
+      timesFetched: FieldValue.increment(1),
     }
-  });
+  }, {merge: true});
 
   return {
     user: user,
