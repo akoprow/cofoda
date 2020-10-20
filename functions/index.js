@@ -234,7 +234,7 @@ async function loadUser(user) {
       numProcessed: FieldValue.increment(newSubmissions),
       timesFetched: FieldValue.increment(1),
     },
-    submissions: _.map(data, processSubmission)
+    submissions: _.fromPairs(_.map(data, (s) => [s.id, s]))
   };
   await userRef.set(newData, {merge: true});
 
