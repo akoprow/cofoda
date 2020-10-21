@@ -1,11 +1,16 @@
+import 'package:cofoda/data/contestsProvider.dart';
 import 'package:cofoda/ui/contestsListScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fluro/fluro.dart' as fluro;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(Initialize(body: AppComponent()));
+  runApp(Initialize(
+      body: MultiProvider(
+          providers: [StreamProvider(create: (_) => ContestsProvider.stream())],
+          child: AppComponent())));
 }
 
 class Initialize extends StatelessWidget {
@@ -68,17 +73,17 @@ class AppComponentState extends State<AppComponent> {
   }
 
   fluro.Handler _allContestsHandler() => fluro.Handler(handlerFunc:
-          (BuildContext context, Map<String, List<String>> params) {
-        final String user = params[userQueryParam]?.first;
-        final String vsUser = params[vsUserQueryParam]?.first;
-        final String ratingLimit = params[ratingLimitParam]?.first;
-        final String filter = params[filterParam]?.first;
-        return ContestsListWidget(
-            user: user,
-            vsUser: vsUser,
-            filter: filter,
-            ratingLimit: ratingLimit == null ? null : int.parse(ratingLimit));
-      });
+      (BuildContext context, Map<String, List<String>> params) {
+    final String user = params[userQueryParam]?.first;
+    final String vsUser = params[vsUserQueryParam]?.first;
+    final String ratingLimit = params[ratingLimitParam]?.first;
+    final String filter = params[filterParam]?.first;
+    return ContestsListWidget(
+        user: user,
+        vsUser: vsUser,
+        filter: filter,
+        ratingLimit: ratingLimit == null ? null : int.parse(ratingLimit));
+  });
 
   /*
   fluro.Handler _problemsHandler() => fluro.Handler(handlerFunc:

@@ -1,6 +1,5 @@
 import 'dart:core';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cofoda/codeforcesAPI.dart';
 import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/submissions.dart';
@@ -9,6 +8,7 @@ import 'package:cofoda/ui/problemWidget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
 
 /*
  * TODO:
@@ -117,28 +117,9 @@ class ContestsListWidget extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final Query contests = FirebaseFirestore.instance
-        .collection('contests')
-        .orderBy('startTimeSeconds', descending: true);
+  Widget build(BuildContext context) => _show(context.watch<List<Contest>>());
 
-    return StreamBuilder<QuerySnapshot>(
-        stream: contests.snapshots(),
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.hasError) {
-            return Text(':(');
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          }
-
-          return _show(snapshot.data.docs);
-        });
-  }
-
-  Widget _show(List<QueryDocumentSnapshot> fireContests) {
-    final allContests = fireContests.map((c) => Contest.fromFire(c)).toList();
+  Widget _show(List<Contest> allContests) {
     final contests = _filterContests(allContests);
 
     final summaryText = (allContests.length == contests.length)
