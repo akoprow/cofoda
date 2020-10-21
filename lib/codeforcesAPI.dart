@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert' as convert;
 
-import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/contestList.dart';
 import 'package:cofoda/model/problemList.dart';
 import 'package:cofoda/model/submissions.dart';
@@ -20,10 +19,12 @@ class Data {
   ProblemStatus statusOfProblem(String user, Problem problem, {int ratingLimit}) =>
       userSubmissions[user].statusOfProblem(problem, ratingLimit: ratingLimit);
 
+/*
   List<Contest> allContestsParticipatedIn(String user) {
     final problems = userSubmissions[user].submittedProblems;
-    return problems.map((problem) => problem.getContest(this)).toList();
+    return problems.map((problemId) => problem.getContest(this)).toList();
   }
+  */
 }
 
 Future<List<dynamic>> _loadProblemsJson() async {

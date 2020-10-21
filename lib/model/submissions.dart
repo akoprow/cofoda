@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cofoda/model/contestList.dart';
 import 'package:cofoda/model/problem.dart';
 
 // BEWARE: order matters as we pick the last that matches.
@@ -10,17 +11,18 @@ final solvedStatuses = {ProblemStatus.solvedLive, ProblemStatus.solvedVirtual, P
 ProblemStatus _betterStatus(ProblemStatus s1, ProblemStatus s2) => ProblemStatus.values[max(s1.index, s2.index)];
 
 class Submission {
-  final Problem problem;
+  final String problemId;
   final DateTime time;
   final ProblemStatus status;
 
-  Submission({this.problem, this.time, this.status});
+  Submission({this.problemId, this.time, this.status});
 
   factory Submission.fromJson(Map<String, dynamic> json) {
     final problem = Problem.fromJson(json['problem'] as Map<String, dynamic>);
     return Submission(
-        problem: problem,
-        time: DateTime.fromMillisecondsSinceEpoch(1000 * (json['creationTimeSeconds'] as int)),
+        problemId: problem.id,
+        time: DateTime.fromMillisecondsSinceEpoch(
+            1000 * (json['creationTimeSeconds'] as int)),
         status: _parseProblemStatus(json));
   }
 
@@ -47,17 +49,21 @@ class Submission {
 
 class AllUserSubmissions {
   // Map from problem ID (i.e. 1385E) to a set of submissions for that problem.
-  final Map<Problem, List<Submission>> _submissions;
+  final Map<String, List<Submission>> _submissions;
 
   AllUserSubmissions(this._submissions);
 
-  List<Problem> get submittedProblems => _submissions.keys.toList();
+  List<Problem> getSubmittedProblems(ContestList contests) => _submissions.keys
+      .map((problemId) => contests.getProblemById(problemId))
+      .toList();
 
   List<Submission> submissionsForProblem(Problem problem) =>
-      _submissions.containsKey(problem) ? _submissions[problem] : [];
+      _submissions.containsKey(problem.id) ? _submissions[problem.id] : [];
 
   ProblemStatus statusOfProblem(Problem problem, {int ratingLimit}) {
-    var result = (ratingLimit != null && problem.rating != null && problem.rating <= ratingLimit)
+    var result = (ratingLimit != null &&
+            problem.rating != null &&
+            problem.rating <= ratingLimit)
         ? ProblemStatus.toUpSolve
         : ProblemStatus.untried;
     for (final submission in submissionsForProblem(problem)) {
@@ -76,11 +82,14 @@ class AllUserSubmissions {
   factory AllUserSubmissions.empty() => AllUserSubmissions({});
 
   factory AllUserSubmissions.fromJson(List<dynamic> json) {
-    final submissions = json.map((dynamic json) => Submission.fromJson(json as Map<String, dynamic>));
-    final submittedProblems = submissions.map((submission) => submission.problem).toSet();
+    final submissions = json.map((dynamic json) =>
+        Submission.fromJson(json as Map<String, dynamic>));
+    final submittedProblems = submissions.map((submission) =>
+    submission.problemId).toSet();
     return AllUserSubmissions({
       for (var problem in submittedProblems)
-        problem: submissions.where((submission) => submission.problem == problem).toList()
+        problem: submissions.where((submission) =>
+        submission.problemId == problem).toList()
     });
   }
 }

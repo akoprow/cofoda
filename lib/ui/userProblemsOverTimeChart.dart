@@ -61,7 +61,8 @@ class UserProblemsOverTimeChartState extends State<UserProblemsOverTimeChart> {
 
   Map<DateTime, int> _getUserSolvedByDay(String user) {
     final submissions = widget.data.userSubmissions[user];
-    final solvedAt = submissions.submittedProblems
+    final solvedAt = submissions
+        .getSubmittedProblems(widget.data.contestList)
         .map((problem) => submissions.solvedWith(problem))
         .where((solution) => solution != null)
         .map((solution) => solution.time)

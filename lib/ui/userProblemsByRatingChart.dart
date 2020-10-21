@@ -36,8 +36,10 @@ class UserProblemsByRatingChartState extends State<UserProblemsByRatingChart> {
 
   charts.Series<MapEntry<int, int>, String> _generateUserSeries(String user, charts.Color color) {
     final submissions = widget.data.userSubmissions[user];
-    final solved = submissions.submittedProblems
-        .map((problem) => MapEntry(problem.rating, submissions.solvedWith(problem)))
+    final solved = submissions
+        .getSubmittedProblems(widget.data.contestList)
+        .map((problem) =>
+            MapEntry(problem.rating, submissions.solvedWith(problem)))
         .where((entry) => entry.key != null && entry.value != null)
         .toList();
 

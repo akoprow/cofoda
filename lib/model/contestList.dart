@@ -1,4 +1,5 @@
 import 'package:cofoda/model/contest.dart';
+import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/problemList.dart';
 
 class ContestList {
@@ -10,10 +11,15 @@ class ContestList {
 
   factory ContestList.fromJson(List<dynamic> json, ProblemList problems) {
     final contests = json
-        .map((dynamic json) => Contest.fromJson(json as Map<String, dynamic>, problems))
+        .map((dynamic json) =>
+            Contest.fromJson(json as Map<String, dynamic>, problems))
         .where((contest) => contest.phase == 'FINISHED')
         .toList();
     return ContestList(contests);
+  }
+
+  Problem getProblemById(String id) {
+    throw UnimplementedError('TODO');
   }
 
   Contest getContestById(int contestId) => _contests[contestId];

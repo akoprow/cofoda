@@ -1,4 +1,5 @@
 import 'package:cofoda/data/contestsProvider.dart';
+import 'package:cofoda/data/userDataProvider.dart';
 import 'package:cofoda/ui/contestsListScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fluro/fluro.dart' as fluro;
@@ -8,9 +9,11 @@ import 'package:provider/provider.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(Initialize(
-      body: MultiProvider(
-          providers: [StreamProvider(create: (_) => ContestsProvider.stream())],
-          child: AppComponent())));
+      body: MultiProvider(providers: [
+    StreamProvider(create: (_) => ContestsProvider.stream()),
+    ChangeNotifierProvider(create: (_) => UserDataProvider()),
+    ChangeNotifierProvider(create: (_) => VsUserDataProvider()),
+  ], child: AppComponent())));
 }
 
 class Initialize extends StatelessWidget {
