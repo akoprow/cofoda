@@ -220,27 +220,28 @@ async function loadProblem(problem) {
 async function loadUser(user) {
   const userRef = db.collection('users').doc(user);
   const userData = await userRef.get();
-
   const from = 1 + ((userData.exists) ? 1+userData.data().meta.numProcessed : 0);
+  const oldSubmissions = (userData.exists) ? userData.data().submissions : {};
   console.log(`Fetching user ${user} starting from submission ${from}.`);
 
   const url = `https://codeforces.com/api/user.status?handle=${user}&from=${from}`;
   const response = await http.get(url);
   const data = response.data.result;
 
-  const newSubmissions = data.length;
+  const newSubmissionsNum = data.length;
+  const newSubmissions = _.fromPairs(_.map(data, (s) => [s.id, processSubmission(s)]));
   const newData = {
     meta: {
-      numProcessed: FieldValue.increment(newSubmissions),
+      numProcessed: FieldValue.increment(newSubmissionsNum),
       timesFetched: FieldValue.increment(1),
     },
-    submissions: _.fromPairs(_.map(data, (s) => [s.id, processSubmission(s)]))
+    submissions: _.merge(oldSubmissions, newSubmissions)
   };
   await userRef.set(newData, {merge: true});
 
   return {
     user: user,
-    newSubmissions: newSubmissions
+    newSubmissions: newSubmissionsNum
   };
 }
 
@@ -251,6 +252,7 @@ function processSubmission(s) {
     participantType: s.author.participantType,
     verdict: s.verdict,
     timeConsumedMillis: s.timeConsumedMillis,
-    memoryConsumedBytes: s.memoryConsumedBytes
+    memoryConsumedBytes: s.memoryConsumedBytes,
+    creationTimeSeconds: s.creationTimeSeconds
   };
 }
