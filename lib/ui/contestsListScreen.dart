@@ -1,6 +1,7 @@
 import 'dart:core';
 
-import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/data/codeforcesAPI.dart';
+import 'package:cofoda/data/userDataProvider.dart';
 import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/submissions.dart';
 import 'package:cofoda/ui/contestListTileWidget.dart';
@@ -15,16 +16,11 @@ import 'package:provider/provider.dart';
  * - refactor data into a common provider.
  */
 class ContestsListWidget extends StatelessWidget {
-  final String _user;
-  final String _vsUser;
   final String _filter;
   final int _ratingLimit;
 
-  const ContestsListWidget(
-      {Key key, String user, String vsUser, String filter, int ratingLimit})
-      : _user = user,
-        _vsUser = vsUser,
-        _filter = filter,
+  const ContestsListWidget({Key key, String filter, int ratingLimit})
+      : _filter = filter,
         _ratingLimit = ratingLimit,
         super(key: key);
 
@@ -61,26 +57,29 @@ class ContestsListWidget extends StatelessWidget {
     };
   }
 
-  Map<ProblemStatus, int> _computeStatsForUser(List<Contest> contests) {
-    return {};
-    /*
+  Map<ProblemStatus, int> _computeStatsForUser(
+      List<Contest> contests, GenericUserDataProvider user) {
     final statuses = contests
-        .map((contest) => contest.problems.map((problem) =>
-            data.statusOfProblem(user, problem, ratingLimit: ratingLimit)))
+        .map((contest) => contest.problems.map((problem) => user.submissions
+            .statusOfProblem(problem, ratingLimit: _ratingLimit)))
         .expand((x) => x)
         .toList();
     return Map.fromIterables(
         ProblemStatus.values,
         ProblemStatus.values
             .map((status) => statuses.where((s) => s == status).length));
-     */
   }
 
-  Widget _generateProblemStats(List<Contest> contests) {
-    final statsForUser = (String forUser) => _computeStatsForUser(contests);
-    final stats = statsForUser(_user);
-    final vsStats = _vsUser != null ? statsForUser(_vsUser) : null;
-    final usersLabel = _vsUser == null ? _user : '${_user} | ${_vsUser}';
+  Widget _generateProblemStats(List<Contest> contests, UserDataProvider user,
+      VsUserDataProvider vsUser) {
+    if (!user.present()) {
+      return Container();
+    }
+    final stats = _computeStatsForUser(contests, user);
+    final vsStats =
+        vsUser.present() ? _computeStatsForUser(contests, vsUser) : null;
+    final usersLabel =
+        vsUser.present() ? '${user.handle} | ${vsUser.handle}' : user.handle;
     return ListTile(
         leading: Text(usersLabel),
         title: Row(children: _renderStats(stats, vsStats)));
@@ -120,26 +119,28 @@ class ContestsListWidget extends StatelessWidget {
   Widget build(BuildContext context) => _show(context.watch<List<Contest>>());
 
   Widget _show(List<Contest> allContests) {
+    if (allContests == null) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final contests = _filterContests(allContests);
 
     final summaryText = (allContests.length == contests.length)
         ? 'Displaying all ${contests.length} contests'
         : 'Displaying ${contests.length}/${allContests.length} contests';
-    final stats = Container(); // TODO _generateProblemStats(contests);
+    final stats = withUsers((user, vsUser) =>
+        _generateProblemStats(contests, user, vsUser));
     final topBar =
-        Card(child: ListTile(title: stats, subtitle: Text(summaryText)));
+    Card(child: ListTile(title: stats, subtitle: Text(summaryText)));
     final topBarSliver = SliverList(
         delegate:
-            SliverChildBuilderDelegate((context, i) => topBar, childCount: 1));
+        SliverChildBuilderDelegate((context, i) => topBar, childCount: 1));
     final contestsWidget = SliverList(
         delegate: SliverChildBuilderDelegate(
-      (context, i) => ContestListTileWidget(
-          user: _user,
-          vsUser: _vsUser,
-          contest: contests[i],
-          ratingLimit: _ratingLimit),
-      childCount: contests.length,
-    ));
+              (context, i) =>
+              ContestListTileWidget(
+                  contest: contests[i], ratingLimit: _ratingLimit),
+          childCount: contests.length,
+        ));
     return Scaffold(
         body: CustomScrollView(slivers: [topBarSliver, contestsWidget]));
   }

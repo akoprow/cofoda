@@ -1,4 +1,4 @@
-import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/data/codeforcesAPI.dart';
 import 'package:cofoda/model/contest.dart';
 import 'package:url_launcher/url_launcher.dart';
 

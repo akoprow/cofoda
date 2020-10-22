@@ -19,19 +19,35 @@ class Submission {
 
   factory Submission.fromJson(Map<String, dynamic> json) {
     final problem = Problem.fromJson(json['problem'] as Map<String, dynamic>);
+    final verdict = json['verdict'] as String;
+    final author = json['author'] as Map<String, dynamic>;
+    final participantType = author['participantType'] as String;
+
     return Submission(
         problemId: problem.id,
         time: DateTime.fromMillisecondsSinceEpoch(
             1000 * (json['creationTimeSeconds'] as int)),
-        status: _parseProblemStatus(json));
+        status: _parseProblemStatus(verdict, participantType));
   }
 
-  static ProblemStatus _parseProblemStatus(Map<String, dynamic> json) {
-    if (json['verdict'] != 'OK') {
+  factory Submission.fromFire(MapEntry<String, dynamic> entry) {
+    final data = entry.value as Map<String, dynamic>;
+    final contestId = data['contestId'] as int;
+    final problemIndex = data['problemIndex'] as String;
+    final verdict = data['verdict'] as String;
+    final participantType = data['participantType'] as String;
+    return Submission(
+        problemId: contestId.toString() + problemIndex,
+        time: DateTime.fromMillisecondsSinceEpoch(
+            1000 * (data['creationTimeSeconds'] as int)),
+        status: _parseProblemStatus(verdict, participantType));
+  }
+
+  static ProblemStatus _parseProblemStatus(
+      String verdict, String participantType) {
+    if (verdict != 'OK') {
       return ProblemStatus.tried;
     } else {
-      final author = json['author'] as Map<String, dynamic>;
-      final participantType = author['participantType'] as String;
       switch (participantType) {
         case 'CONTESTANT':
           return ProblemStatus.solvedLive;
@@ -84,6 +100,19 @@ class AllUserSubmissions {
   factory AllUserSubmissions.fromJson(List<dynamic> json) {
     final submissions = json.map((dynamic json) =>
         Submission.fromJson(json as Map<String, dynamic>));
+    final submittedProblems = submissions.map((submission) =>
+    submission.problemId).toSet();
+    return AllUserSubmissions({
+      for (var problem in submittedProblems)
+        problem: submissions.where((submission) =>
+        submission.problemId == problem).toList()
+    });
+  }
+
+  static AllUserSubmissions fromFire(Map<String, dynamic> json) {
+    final jsonSubmissions = json['submissions'] as Map<String, dynamic>;
+    final List<Submission> submissions = jsonSubmissions.entries
+        .map((entry) => Submission.fromFire(entry)).toList();
     final submittedProblems = submissions.map((submission) =>
     submission.problemId).toSet();
     return AllUserSubmissions({

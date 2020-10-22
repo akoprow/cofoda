@@ -1,4 +1,4 @@
-import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/data/codeforcesAPI.dart';
 import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/submissions.dart';
 import 'package:flutter/material.dart';

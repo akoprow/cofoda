@@ -1,4 +1,4 @@
-import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/data/codeforcesAPI.dart';
 import 'package:cofoda/ui/userProblemsByRatingChart.dart';
 import 'package:cofoda/ui/userProblemsOverTimeChart.dart';
 import 'package:cofoda/ui/utils.dart';

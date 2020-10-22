@@ -1,6 +1,6 @@
 import 'dart:core';
 
-import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/data/codeforcesAPI.dart';
 import 'package:cofoda/ui/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

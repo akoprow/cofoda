@@ -1,24 +1,20 @@
+import 'package:cofoda/data/userDataProvider.dart';
 import 'package:cofoda/main.dart';
 import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/problem.dart';
+import 'package:cofoda/model/submissions.dart';
+import 'package:cofoda/ui/problemWidget.dart';
 import 'package:flutter/material.dart';
 
+import 'chip2.dart';
 import 'contestHistogram.dart';
 
 class ContestListTileWidget extends StatelessWidget {
-  final String _user;
-  final String _vsUser;
   final Contest _contest;
   final int _ratingLimit;
 
-  ContestListTileWidget(
-      {@required String user,
-      @required Contest contest,
-      int ratingLimit,
-      String vsUser})
-      : _user = user,
-        _vsUser = vsUser,
-        _ratingLimit = ratingLimit,
+  ContestListTileWidget({@required Contest contest, int ratingLimit})
+      : _ratingLimit = ratingLimit,
         _contest = contest;
 
   @override
@@ -51,16 +47,25 @@ class ContestListTileWidget extends StatelessWidget {
   }
 
   Widget _buildCard(Problem problem) {
-    return Chip(label: Text(problem.index), backgroundColor: Colors.grey[200]);
-    /*
-    final color1 = problemStatusToColor(_user, _data, problem, ratingLimit: _ratingLimit);
-    if (_vsUser == null) {
-      return Chip(label: Text(problem.index), backgroundColor: color1);
-    } else {
-      final color2 = problemStatusToColor(_vsUser, _data, problem, ratingLimit: _ratingLimit);
-      return Chip2(
-          label: Text('${problem.index} | ${problem.index}'), backgroundColor: color1, secondBackgroundColor: color2);
-    }
-    */
+    return withUsers((user, vsUser) {
+      if (user.present()) {
+        final color1 =
+            user.problemStatusToColor(problem, ratingLimit: _ratingLimit);
+        if (vsUser.present()) {
+          final color2 =
+              vsUser.problemStatusToColor(problem, ratingLimit: _ratingLimit);
+          return Chip2(
+              label: Text('${problem.index} | ${problem.index}'),
+              backgroundColor: color1,
+              secondBackgroundColor: color2);
+        } else {
+          return Chip(label: Text(problem.index), backgroundColor: color1);
+        }
+      } else {
+        return Chip(
+            label: Text(problem.index),
+            backgroundColor: statusToColor(ProblemStatus.untried));
+      }
+    });
   }
 }

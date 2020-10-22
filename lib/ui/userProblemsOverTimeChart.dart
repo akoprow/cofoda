@@ -1,5 +1,5 @@
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/data/codeforcesAPI.dart';
 import 'package:flutter/material.dart';
 
 enum GroupSolvedProblemsBy { day, week, month, year }

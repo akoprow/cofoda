@@ -8,12 +8,13 @@ import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(Initialize(
-      body: MultiProvider(providers: [
+  final providers = [
     StreamProvider(create: (_) => ContestsProvider.stream()),
     ChangeNotifierProvider(create: (_) => UserDataProvider()),
-    ChangeNotifierProvider(create: (_) => VsUserDataProvider()),
-  ], child: AppComponent())));
+    ChangeNotifierProvider(create: (_) => VsUserDataProvider())
+  ];
+  runApp(Initialize(
+      body: MultiProvider(providers: providers, child: AppComponent())));
 }
 
 class Initialize extends StatelessWidget {
@@ -48,15 +49,14 @@ class AppComponent extends StatefulWidget {
 }
 
 class AppComponentState extends State<AppComponent> {
-  static const String userQueryParam = 'user';
-  static const String vsUserQueryParam = 'vsUser';
+  static const String usersQueryParam = 'users';
   static const String contestIdParam = 'contestId';
   static const String ratingLimitParam = 'upsolveTo';
   static const String filterParam = 'filter';
 
   static const String routeRoot = '/';
   static const String routeUserPrefix = '/user/';
-  static const String routeUser = '/user/:$userQueryParam';
+  static const String routeUser = routeUserPrefix + ':user';
   static const String routeProblems = '/problems';
   static const String routeAllContests = '/contests';
   static const String routeSingleContestPrefix = '/contest/';
@@ -75,18 +75,35 @@ class AppComponentState extends State<AppComponent> {
 */
   }
 
+  void _setUsersFromParams(
+      BuildContext context, Map<String, List<String>> params) {
+    final String usersString = params[usersQueryParam]?.first;
+    final userProvider = context.watch<UserDataProvider>();
+    final vsUserProvider = context.watch<VsUserDataProvider>();
+
+    if (usersString == null || usersString.isEmpty) {
+      userProvider.setHandle(null);
+      vsUserProvider.setHandle(null);
+    } else {
+      final users = usersString.split(',');
+      if (users.isNotEmpty) {
+        userProvider.setHandle(users[0]);
+      }
+      if (users.length > 1) {
+        userProvider.setHandle(users[1]);
+      }
+    }
+  }
+
   fluro.Handler _allContestsHandler() => fluro.Handler(handlerFunc:
-      (BuildContext context, Map<String, List<String>> params) {
-    final String user = params[userQueryParam]?.first;
-    final String vsUser = params[vsUserQueryParam]?.first;
-    final String ratingLimit = params[ratingLimitParam]?.first;
-    final String filter = params[filterParam]?.first;
-    return ContestsListWidget(
-        user: user,
-        vsUser: vsUser,
-        filter: filter,
-        ratingLimit: ratingLimit == null ? null : int.parse(ratingLimit));
-  });
+          (BuildContext context, Map<String, List<String>> params) {
+        _setUsersFromParams(context, params);
+        final String ratingLimit = params[ratingLimitParam]?.first;
+        final String filter = params[filterParam]?.first;
+        return ContestsListWidget(
+            filter: filter,
+            ratingLimit: ratingLimit == null ? null : int.parse(ratingLimit));
+      });
 
   /*
   fluro.Handler _problemsHandler() => fluro.Handler(handlerFunc:

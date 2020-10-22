@@ -1,6 +1,6 @@
 import 'dart:core';
 
-import 'package:cofoda/codeforcesAPI.dart';
+import 'package:cofoda/data/codeforcesAPI.dart';
 import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/submissions.dart';
 import 'package:cofoda/ui/filtering.dart';

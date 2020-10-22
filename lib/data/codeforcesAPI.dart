@@ -7,7 +7,7 @@ import 'package:cofoda/model/submissions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-import 'model/problem.dart';
+import '../model/problem.dart';
 
 class Data {
   final ProblemList problemList;
