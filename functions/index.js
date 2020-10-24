@@ -86,9 +86,18 @@ exports.loadProblems = functions.runWith({
 exports.loadUserData = functions.https.onRequest(async (req, res) => {
   const user = req.query.user;
   if (!user) {
-    res.json('Please provide <user> query param');
+    res.json({error: 'Please provide <user> query param'});
   } else {
     res.json(await loadUser(user));
+  }
+});
+
+exports.refreshUserData = functions.https.onCall((data, context) => {
+  const user = data.user;
+  if (user) {
+    return loadUser(user);
+  } else {
+    return 'No user provided';
   }
 });
 
