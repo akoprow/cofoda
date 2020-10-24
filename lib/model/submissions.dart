@@ -110,15 +110,20 @@ class AllUserSubmissions {
   }
 
   static AllUserSubmissions fromFire(Map<String, dynamic> json) {
+    if (json == null) {
+      return AllUserSubmissions.empty();
+    }
     final jsonSubmissions = json['submissions'] as Map<String, dynamic>;
     final List<Submission> submissions = jsonSubmissions.entries
-        .map((entry) => Submission.fromFire(entry)).toList();
-    final submittedProblems = submissions.map((submission) =>
-    submission.problemId).toSet();
+        .map((entry) => Submission.fromFire(entry))
+        .toList();
+    final submittedProblems =
+        submissions.map((submission) => submission.problemId).toSet();
     return AllUserSubmissions({
       for (var problem in submittedProblems)
-        problem: submissions.where((submission) =>
-        submission.problemId == problem).toList()
+        problem: submissions
+            .where((submission) => submission.problemId == problem)
+            .toList()
     });
   }
 }

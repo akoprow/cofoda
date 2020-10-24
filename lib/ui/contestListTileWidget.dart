@@ -20,7 +20,8 @@ class ContestListTileWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final contestId = Chip(label: Text('#' + _contest.id.toString()));
-    final contestName = Text('  ' + _contest.name);
+    final contestName = Flexible(
+        child: Text('  ' + _contest.name, overflow: TextOverflow.ellipsis));
     final histogram = ContestHistogram(contest: _contest);
     final elements = [contestId, contestName, Spacer(flex: 3)] +
         _showProblems() +
@@ -54,8 +55,9 @@ class ContestListTileWidget extends StatelessWidget {
         if (vsUser.present()) {
           final color2 =
               vsUser.problemStatusToColor(problem, ratingLimit: _ratingLimit);
+          final text = '${problem.index} | ${problem.index}';
           return Chip2(
-              label: Text('${problem.index} | ${problem.index}'),
+              label: Text(text),
               backgroundColor: color1,
               secondBackgroundColor: color2);
         } else {

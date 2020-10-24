@@ -36,6 +36,7 @@ class Initialize extends StatelessWidget {
             return body;
           }
 
+          // FirebaseFunctions.instance.useFunctionsEmulator(origin: 'http://localhost:5000');
           return Center(
               child: Container(
                   child: CircularProgressIndicator(), width: 32, height: 32));
@@ -90,7 +91,7 @@ class AppComponentState extends State<AppComponent> {
         userProvider.setHandle(users[0]);
       }
       if (users.length > 1) {
-        userProvider.setHandle(users[1]);
+        vsUserProvider.setHandle(users[1]);
       }
     }
   }

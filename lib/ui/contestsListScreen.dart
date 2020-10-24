@@ -136,11 +136,10 @@ class ContestsListWidget extends StatelessWidget {
         SliverChildBuilderDelegate((context, i) => topBar, childCount: 1));
     final contestsWidget = SliverList(
         delegate: SliverChildBuilderDelegate(
-              (context, i) =>
-              ContestListTileWidget(
-                  contest: contests[i], ratingLimit: _ratingLimit),
-          childCount: contests.length,
-        ));
+              (context, i) => ContestListTileWidget(
+          contest: contests[i], ratingLimit: _ratingLimit),
+      childCount: contests.length,
+    ));
     return Scaffold(
         body: CustomScrollView(slivers: [topBarSliver, contestsWidget]));
   }
