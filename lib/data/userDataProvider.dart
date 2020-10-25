@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 enum Type { User, VsUser }
 
 abstract class GenericUserDataProvider extends ChangeNotifier {
-  static Duration userDataRefreshDuration = Duration(seconds: 15);
+  static Duration userDataRefreshDuration = Duration(seconds: 60);
 
   String handle;
   bool isLoading = true;
