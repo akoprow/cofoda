@@ -20,10 +20,10 @@ class ContestListTileWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final contestId = Chip(label: Text('#' + _contest.id.toString()));
-    final contestName = Flexible(
+    final contestName = Expanded(
         child: Text('  ' + _contest.name, overflow: TextOverflow.ellipsis));
     final histogram = ContestHistogram(contest: _contest);
-    final elements = [contestId, contestName, Spacer(flex: 3)] +
+    final elements = [contestId, contestName] +
         _showProblems() +
         [Container(width: 10), histogram];
     return Card(
