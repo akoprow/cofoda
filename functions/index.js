@@ -25,7 +25,7 @@ const config = {
   },
   forbiddenContests: [
     693, 726, 728, 826, 857, 874, 885, 905, 1048, 1049, 1050, 1094, 1222, 1224,
-    1226, 1258
+    1226, 1258, 1412
   ]
 }
 const forbiddenContests = [];
