@@ -131,7 +131,7 @@ class AppComponentState extends State<AppComponent> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'CoFoDa',
+        title: 'Dashforces',
         theme: ThemeData(
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
