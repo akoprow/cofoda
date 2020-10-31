@@ -70,19 +70,28 @@ class ContestsListWidget extends StatelessWidget {
             .map((status) => statuses.where((s) => s == status).length));
   }
 
+  Widget _userContainer(GenericUserDataProvider user) {
+    return Text(user.handle + ((user.isLoading) ? ' (loading...)' : ''));
+  }
+
   Widget _generateProblemStats(List<Contest> contests, UserDataProvider user,
       VsUserDataProvider vsUser) {
     if (!user.present()) {
       return Container();
     }
-    final stats = _computeStatsForUser(contests, user);
-    final vsStats =
-        vsUser.present() ? _computeStatsForUser(contests, vsUser) : null;
-    final usersLabel =
-        vsUser.present() ? '${user.handle} | ${vsUser.handle}' : user.handle;
+    final genStats = (GenericUserDataProvider user) =>
+        user.ready() ? _computeStatsForUser(contests, user) : null;
+    final stats = genStats(user);
+    final vsStats = genStats(vsUser);
+    final users = vsUser.ready()
+        ? Row(children: [
+            _userContainer(user),
+            Text(' | '),
+            _userContainer(vsUser)
+          ], mainAxisSize: MainAxisSize.min)
+        : _userContainer(user);
     return ListTile(
-        leading: Text(usersLabel),
-        title: Row(children: _renderStats(stats, vsStats)));
+        leading: users, title: Row(children: _renderStats(stats, vsStats)));
   }
 
   static List<Widget> _renderStats(
@@ -90,10 +99,9 @@ class ContestsListWidget extends StatelessWidget {
     final numbersForStatus = (List<ProblemStatus> statuses) {
       final sumFor = (Map<ProblemStatus, int> stats) =>
           statuses.map((status) => stats[status]).reduce((a, b) => a + b);
-      final userNum = sumFor(stats);
       return vsStats == null
-          ? userNum.toString()
-          : '${userNum} | ${sumFor(vsStats)}';
+          ? '${sumFor(stats)}'
+          : '${sumFor(stats)} | ${sumFor(vsStats)}';
     };
     final Widget Function(ProblemStatus) renderStatus = (status) => Padding(
         padding: EdgeInsets.only(right: 5),
@@ -118,29 +126,39 @@ class ContestsListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _show(context.watch<List<Contest>>());
 
+  Widget _topBarSliver(List<Contest> allContests, List<Contest> contests) {
+    final summaryText = (allContests.length == contests.length)
+        ? 'Displaying all ${contests.length} contests'
+        : 'Displaying ${contests.length}/${allContests.length} contests';
+    final stats = withUsers(
+            (user, vsUser) => _generateProblemStats(contests, user, vsUser));
+    final topBar =
+    Card(child: ListTile(title: stats, subtitle: Text(summaryText)));
+    return SliverList(
+        delegate:
+        SliverChildBuilderDelegate((context, i) => topBar, childCount: 1));
+  }
+
+  Widget _contestsSliver(List<Contest> contests) {
+    return SliverList(
+        delegate: SliverChildBuilderDelegate(
+              (context, i) =>
+              ContestListTileWidget(
+                  contest: contests[i], ratingLimit: _ratingLimit),
+          childCount: contests.length,
+        ));
+  }
+
   Widget _show(List<Contest> allContests) {
     if (allContests == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final contests = _filterContests(allContests);
 
-    final summaryText = (allContests.length == contests.length)
-        ? 'Displaying all ${contests.length} contests'
-        : 'Displaying ${contests.length}/${allContests.length} contests';
-    final stats = withUsers((user, vsUser) =>
-        _generateProblemStats(contests, user, vsUser));
-    final topBar =
-    Card(child: ListTile(title: stats, subtitle: Text(summaryText)));
-    final topBarSliver = SliverList(
-        delegate:
-        SliverChildBuilderDelegate((context, i) => topBar, childCount: 1));
-    final contestsWidget = SliverList(
-        delegate: SliverChildBuilderDelegate(
-              (context, i) => ContestListTileWidget(
-          contest: contests[i], ratingLimit: _ratingLimit),
-      childCount: contests.length,
-    ));
     return Scaffold(
-        body: CustomScrollView(slivers: [topBarSliver, contestsWidget]));
+        body: CustomScrollView(slivers: [
+          _topBarSliver(allContests, contests),
+          _contestsSliver(contests)
+        ]));
   }
 }

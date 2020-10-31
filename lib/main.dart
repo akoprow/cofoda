@@ -78,7 +78,9 @@ class AppComponentState extends State<AppComponent> {
 
   void _setUsersFromParams(
       BuildContext context, Map<String, List<String>> params) {
-    final String usersString = params[usersQueryParam]?.first;
+    final String usersString =
+        'koper,WhatsInItForMe'; // params[usersQueryParam]?.first;
+
     final userProvider = context.watch<UserDataProvider>();
     final vsUserProvider = context.watch<VsUserDataProvider>();
 

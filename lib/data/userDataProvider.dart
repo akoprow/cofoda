@@ -16,21 +16,20 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
   static Duration userDataRefreshDuration = Duration(seconds: 15);
 
   String handle;
-  bool isLoading = true;
+  bool isLoading = false;
   AllUserSubmissions submissions = AllUserSubmissions.empty();
   int numProcessed;
   Timer timer;
-  DateTime lastRefresh;
 
   bool present() => handle != null;
+
+  bool ready() => present() && !isLoading;
 
   void setHandle(String newHandle) {
     if (newHandle == null || handle == newHandle) {
       return;
     }
 
-    isLoading = true;
-    lastRefresh = null;
     handle = newHandle;
     timer?.cancel();
 
@@ -40,11 +39,14 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
       timer = Timer.periodic(userDataRefreshDuration, (_) {
         maybeRefreshUserData();
       });
+      setLoading(true);
       FirebaseFirestore.instance
           .collection('users')
           .doc(newHandle)
           .snapshots()
           .listen(_update);
+    } else {
+      setLoading(false);
     }
   }
 
@@ -57,13 +59,21 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
   }
 
   void _update(DocumentSnapshot event) {
-    isLoading = false;
-    submissions = AllUserSubmissions.fromFire(event.data());
-    numProcessed = _getNumProcessed(event.data());
-    notifyListeners();
+    print('Got new data for user: $handle');
+    if (event.exists) {
+      submissions = AllUserSubmissions.fromFire(event.data());
+      numProcessed = _getNumProcessed(event.data());
+      setLoading(false);
+    } else {
+      setLoading(true);
+      numProcessed = 0;
+    }
   }
 
   void maybeRefreshUserData() async {
+    if (numProcessed == null) {
+      return;
+    }
     final client = http.Client();
     var refresh = false;
     try {
@@ -73,6 +83,7 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         final body = convert.jsonDecode(response.body) as Map<String, dynamic>;
         final missingSubmissions = body['result'] as List<dynamic>;
+        print('URL: $url, missingSubmissions: ${missingSubmissions.length}');
         refresh = missingSubmissions.isNotEmpty;
       }
     } finally {
@@ -87,14 +98,24 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
   void refreshUserData() async {
     print('Refreshing user: $handle');
     final args = <String, dynamic>{'user': handle};
+    setLoading(true);
     await FirebaseFunctions.instance
         .httpsCallable('refreshUserData')
         .call<dynamic>(args);
   }
 
   int _getNumProcessed(Map<String, dynamic> data) {
-    final meta = data['meta'] as Map<String, dynamic>;
-    return meta['numProcessed'] as int;
+    if (data == null || !data.containsKey('meta')) {
+      return 0;
+    } else {
+      final meta = data['meta'] as Map<String, dynamic>;
+      return meta['numProcessed'] as int;
+    }
+  }
+
+  void setLoading(bool loading) {
+    isLoading = loading;
+    notifyListeners();
   }
 }
 
@@ -108,7 +129,8 @@ class VsUserDataProvider extends GenericUserDataProvider {
   Type type() => Type.VsUser;
 }
 
-Widget withUsers(Widget Function(UserDataProvider user, VsUserDataProvider vsUser) f) {
+Widget withUsers(
+    Widget Function(UserDataProvider user, VsUserDataProvider vsUser) f) {
   return Consumer2<UserDataProvider, VsUserDataProvider>(
       builder: (_, user, vsUser, __) => f(user, vsUser));
 }

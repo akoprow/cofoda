@@ -229,7 +229,7 @@ async function loadProblem(problem) {
 async function loadUser(user) {
   const userRef = db.collection('users').doc(user);
   const userData = await userRef.get();
-  const from = 1 + ((userData.exists) ? 1+userData.data().meta.numProcessed : 0);
+  const from = 1 + ((userData.exists) ? userData.data().meta.numProcessed : 0);
   const oldSubmissions = (userData.exists) ? userData.data().submissions : {};
   console.log(`Fetching user ${user} starting from submission ${from}.`);
 
