@@ -12,6 +12,7 @@ const rateLimit = require('axios-rate-limit');
 // ---- Constants
 // -----------------------------------------------------------------------------
 const config = {
+  contestRefreshFrequency: 'every 5 minutes',
   concurrency: {
     maxProblemsLoadingInParallel: 10,
     maxContestsLoadingInParallel: 10
@@ -66,6 +67,9 @@ const ret = {
 // -----------------------------------------------------------------------------
 // ---- Entry points
 // -----------------------------------------------------------------------------
+
+exports.scheduledLoadContests = functions.pubsub.schedule(config.contestRefreshFrequency)
+    .onRun(async (context) => { await loadAllContests() });
 
 exports.loadContests = functions.runWith({
   timeoutSeconds: 540,
