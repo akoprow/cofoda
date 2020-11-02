@@ -12,7 +12,7 @@ const rateLimit = require('axios-rate-limit');
 // ---- Constants
 // -----------------------------------------------------------------------------
 const config = {
-  contestRefreshFrequency: 'every 5 minutes',
+  contestRefreshFrequency: 'every 1 hours',
   concurrency: {
     maxProblemsLoadingInParallel: 10,
     maxContestsLoadingInParallel: 10
