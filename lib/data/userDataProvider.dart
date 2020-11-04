@@ -21,9 +21,9 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
   int numProcessed;
   Timer timer;
 
-  bool present() => handle != null;
+  bool isPresent() => handle != null;
 
-  bool ready() => present() && !isLoading;
+  bool isReady() => isPresent() && !isLoading;
 
   void setHandle(String newHandle) {
     if (newHandle == null || handle == newHandle) {
@@ -35,9 +35,9 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
 
     if (handle != null) {
       print('Setting up timer for GenericUserDataProvider<$handle>');
-      maybeRefreshUserData();
+      _maybeRefreshUserData();
       timer = Timer.periodic(userDataRefreshDuration, (_) {
-        maybeRefreshUserData();
+        _maybeRefreshUserData();
       });
       setLoading(true);
       FirebaseFirestore.instance
@@ -59,26 +59,28 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
   }
 
   void _update(DocumentSnapshot event) {
-    print('Got new data for user: $handle');
     if (event.exists) {
+      print('Got new data for user: $handle');
       submissions = AllUserSubmissions.fromFire(event.data());
       numProcessed = _getNumProcessed(event.data());
       setLoading(false);
     } else {
+      print('No data for user: $handle');
       setLoading(true);
       numProcessed = 0;
+      _maybeRefreshUserData();
     }
   }
 
-  void maybeRefreshUserData() async {
+  void _maybeRefreshUserData() async {
     if (numProcessed == null) {
       return;
     }
     final client = http.Client();
     var refresh = false;
+    final url =
+        'https://codeforces.com/api/user.status?handle=${handle}&from=${numProcessed + 1 ?? 0}';
     try {
-      final url =
-          'https://codeforces.com/api/user.status?handle=${handle}&from=${numProcessed + 1 ?? 0}';
       final response = await client.get(url);
       if (response.statusCode == 200) {
         final body = convert.jsonDecode(response.body) as Map<String, dynamic>;
@@ -86,16 +88,18 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
         print('URL: $url, missingSubmissions: ${missingSubmissions.length}');
         refresh = missingSubmissions.isNotEmpty;
       }
+    } catch (e) {
+      print('Error fetching data from: $url');
     } finally {
       client.close();
     }
 
     if (refresh) {
-      await refreshUserData();
+      await _refreshUserData();
     }
   }
 
-  void refreshUserData() async {
+  void _refreshUserData() async {
     print('Refreshing user: $handle');
     final args = <String, dynamic>{'user': handle};
     setLoading(true);
@@ -116,6 +120,11 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
   void setLoading(bool loading) {
     isLoading = loading;
     notifyListeners();
+  }
+
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
   }
 }
 

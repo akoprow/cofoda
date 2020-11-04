@@ -11,10 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
-/*
- * TODO:
- * - refactor data into a common provider.
- */
 class ContestsListWidget extends StatelessWidget {
   final String _filter;
   final int _ratingLimit;
@@ -76,14 +72,14 @@ class ContestsListWidget extends StatelessWidget {
 
   Widget _generateProblemStats(List<Contest> contests, UserDataProvider user,
       VsUserDataProvider vsUser) {
-    if (!user.present()) {
+    if (!user.isPresent()) {
       return Container();
     }
     final genStats = (GenericUserDataProvider user) =>
-        user.ready() ? _computeStatsForUser(contests, user) : null;
+        user.isReady() ? _computeStatsForUser(contests, user) : null;
     final stats = genStats(user);
     final vsStats = genStats(vsUser);
-    final users = vsUser.ready()
+    final users = vsUser.isPresent()
         ? Row(children: [
             _userContainer(user),
             Text(' | '),
@@ -91,28 +87,40 @@ class ContestsListWidget extends StatelessWidget {
           ], mainAxisSize: MainAxisSize.min)
         : _userContainer(user);
     return ListTile(
-        leading: users, title: Row(children: _renderStats(stats, vsStats)));
+        leading: users,
+        title: Row(children: _renderStats(stats, vsStats, vsUser.isPresent())));
   }
 
-  static List<Widget> _renderStats(
-      Map<ProblemStatus, int> stats, Map<ProblemStatus, int> vsStats) {
-    final numbersForStatus = (List<ProblemStatus> statuses) {
-      final sumFor = (Map<ProblemStatus, int> stats) =>
-          statuses.map((status) => stats[status]).reduce((a, b) => a + b);
-      return vsStats == null
-          ? '${sumFor(stats)}'
-          : '${sumFor(stats)} | ${sumFor(vsStats)}';
-    };
+  static String _statsForStatus(
+      List<ProblemStatus> statuses,
+      Map<ProblemStatus, int> stats,
+      Map<ProblemStatus, int> vsStats,
+      bool secondUser) {
+    final sumFor = (Map<ProblemStatus, int> stats) => (stats == null)
+        ? '?'
+        : statuses
+            .map((status) => stats[status] ?? 0)
+            .reduce((a, b) => a + b)
+            .toString();
+    return secondUser
+        ? '${sumFor(stats)} | ${sumFor(vsStats)}'
+        : '${sumFor(stats)}';
+  }
+
+  static List<Widget> _renderStats(Map<ProblemStatus, int> stats,
+      Map<ProblemStatus, int> vsStats, bool secondUser) {
+    final getStats = (List<ProblemStatus> statuses) =>
+        _statsForStatus(statuses, stats, vsStats, secondUser);
     final Widget Function(ProblemStatus) renderStatus = (status) => Padding(
         padding: EdgeInsets.only(right: 5),
         child: Chip(
-          label: Text(numbersForStatus([status])),
+          label: Text(getStats([status])),
           backgroundColor: statusToColor(status),
         ));
-    final solvedLive = numbersForStatus([ProblemStatus.solvedLive]);
-    final solvedVirtual = numbersForStatus([ProblemStatus.solvedVirtual]);
-    final solvedPractice = numbersForStatus([ProblemStatus.solvedPractice]);
-    final solvedTotal = numbersForStatus([
+    final solvedLive = getStats([ProblemStatus.solvedLive]);
+    final solvedVirtual = getStats([ProblemStatus.solvedVirtual]);
+    final solvedPractice = getStats([ProblemStatus.solvedPractice]);
+    final solvedTotal = getStats([
       ProblemStatus.solvedLive,
       ProblemStatus.solvedVirtual,
       ProblemStatus.solvedPractice
