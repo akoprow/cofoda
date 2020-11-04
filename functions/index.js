@@ -243,12 +243,13 @@ async function loadUser(user) {
 
   const newSubmissionsNum = data.length;
   const newSubmissions = _.fromPairs(_.map(data, (s) => [s.id, processSubmission(s)]));
+  const allSubmissions = _.merge(oldSubmissions, newSubmissions);
   const newData = {
     meta: {
-      numProcessed: FieldValue.increment(newSubmissionsNum),
+      numProcessed: _.keys(allSubmissions).length,
       timesFetched: FieldValue.increment(1),
     },
-    submissions: _.merge(oldSubmissions, newSubmissions)
+    submissions: allSubmissions
   };
   await userRef.set(newData, {merge: true});
 
