@@ -7,6 +7,7 @@ import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/submissions.dart';
 import 'package:cofoda/ui/problemWidget.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
@@ -20,6 +21,8 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
   AllUserSubmissions submissions = AllUserSubmissions.empty();
   int numProcessed;
   Timer timer;
+
+  Color get color;
 
   bool isPresent() => handle != null;
 
@@ -131,15 +134,27 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
 class UserDataProvider extends GenericUserDataProvider {
   @override
   Type type() => Type.User;
+
+  @override
+  Color get color => Colors.blue[300];
 }
 
 class VsUserDataProvider extends GenericUserDataProvider {
   @override
   Type type() => Type.VsUser;
+
+  @override
+  Color get color => Colors.brown[300];
 }
 
-Widget withUsers(
-    Widget Function(UserDataProvider user, VsUserDataProvider vsUser) f) {
+class UsersData {
+  final UserDataProvider user;
+  final VsUserDataProvider vsUser;
+
+  UsersData(this.user, this.vsUser);
+}
+
+Widget withUsers(Widget Function(UsersData users) f) {
   return Consumer2<UserDataProvider, VsUserDataProvider>(
-      builder: (_, user, vsUser, __) => f(user, vsUser));
+      builder: (_, user, vsUser, __) => f(UsersData(user, vsUser)));
 }

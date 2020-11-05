@@ -48,7 +48,9 @@ class ContestListTileWidget extends StatelessWidget {
   }
 
   Widget _buildCard(Problem problem) {
-    return withUsers((user, vsUser) {
+    return withUsers((userData) {
+      final user = userData.user;
+      final vsUser = userData.vsUser;
       if (user.isReady()) {
         final color1 =
             user.problemStatusToColor(problem, ratingLimit: _ratingLimit);

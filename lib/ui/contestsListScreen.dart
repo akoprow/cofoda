@@ -70,8 +70,9 @@ class ContestsListWidget extends StatelessWidget {
     return Text(user.handle + ((user.isLoading) ? ' (loading...)' : ''));
   }
 
-  Widget _generateProblemStats(List<Contest> contests, UserDataProvider user,
-      VsUserDataProvider vsUser) {
+  Widget _generateProblemStats(List<Contest> contests, UsersData users) {
+    final UserDataProvider user = users.user;
+    final vsUser = users.vsUser;
     if (!user.isPresent()) {
       return Container();
     }
@@ -79,7 +80,7 @@ class ContestsListWidget extends StatelessWidget {
         user.isReady() ? _computeStatsForUser(contests, user) : null;
     final stats = genStats(user);
     final vsStats = genStats(vsUser);
-    final users = vsUser.isPresent()
+    final userLabels = vsUser.isPresent()
         ? Row(children: [
             _userContainer(user),
             Text(' | '),
@@ -87,7 +88,7 @@ class ContestsListWidget extends StatelessWidget {
           ], mainAxisSize: MainAxisSize.min)
         : _userContainer(user);
     return ListTile(
-        leading: users,
+        leading: userLabels,
         title: Row(children: _renderStats(stats, vsStats, vsUser.isPresent())));
   }
 
@@ -138,8 +139,7 @@ class ContestsListWidget extends StatelessWidget {
     final summaryText = (allContests.length == contests.length)
         ? 'Displaying all ${contests.length} contests'
         : 'Displaying ${contests.length}/${allContests.length} contests';
-    final stats = withUsers(
-            (user, vsUser) => _generateProblemStats(contests, user, vsUser));
+    final stats = withUsers((users) => _generateProblemStats(contests, users));
     final topBar =
     Card(child: ListTile(title: stats, subtitle: Text(summaryText)));
     return SliverList(
