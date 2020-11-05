@@ -21,8 +21,7 @@ class ContestResults {
 }
 
 class Contest implements Comparable<Contest> {
-  final int id;
-  final String name, type, phase;
+  final String id, name, type, phase;
   final List<Problem> problems;
   final ContestResults results;
 
@@ -32,12 +31,12 @@ class Contest implements Comparable<Contest> {
   factory Contest.fromJson(Map<String, dynamic> json, ProblemList problemList) {
     final id = json['id'] as int;
     return Contest(
-        id: id,
+        id: id.toString(),
         name: json['name'] as String,
         type: json['type'] as String,
         phase: json['phase'] as String,
         problems: problemList.problems
-            .where((problem) => problem.contestId == id)
+            .where((problem) => problem.contestId == id.toString())
             .toList());
   }
 
@@ -53,7 +52,7 @@ class Contest implements Comparable<Contest> {
         details['scores'] as Map<String, dynamic>) : null;
 
     return Contest(
-        id: id,
+        id: id.toString(),
         name: data['name'] as String,
         type: data['type'] as String,
         phase: data['phase'] as String,
@@ -71,5 +70,5 @@ class Contest implements Comparable<Contest> {
   int get hashCode => id.hashCode;
 
   @override
-  int compareTo(Contest other) => id?.compareTo(other?.id ?? -1) ?? 1;
+  int compareTo(Contest other) => id?.compareTo(other?.id ?? '') ?? 1;
 }

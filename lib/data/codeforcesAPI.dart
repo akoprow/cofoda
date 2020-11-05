@@ -17,8 +17,10 @@ class Data {
 
   Data(this.problemList, this.contestList, this.userSubmissions);
 
-  ProblemStatus statusOfProblem(String user, Problem problem, {int ratingLimit}) =>
-      userSubmissions[user].statusOfProblem(problem, ratingLimit: ratingLimit);
+  ProblemStatus statusOfProblem(String user, Contest contest, Problem problem,
+          {int ratingLimit}) =>
+      userSubmissions[user]
+          .statusOfProblem(contest, problem, ratingLimit: ratingLimit);
 
   List<Contest> allContestsParticipatedIn(String user) {
     final problems = userSubmissions[user].getSubmittedProblems(contestList);

@@ -3,11 +3,36 @@ import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/problemList.dart';
 
 class ContestList {
-  final Map<int, Contest> _contests;
+  // contest id -> contest
+  final Map<String, Contest> _contests;
 
-  ContestList(Iterable<Contest> contestList) : _contests = {for (var contest in contestList) contest.id: contest};
+  // problem name -> problem
+  final Map<String, Problem> _problemsByName;
 
-  List<Contest> get allContests => _contests.values.toList();
+  ContestList(List<Contest> contestList)
+      : _contests = {for (final contest in contestList) contest.id: contest},
+        _problemsByName = _getProblemsByName(contestList);
+
+  factory ContestList.empty() => ContestList([]);
+
+  Problem getProblemByName(String problemName) => _problemsByName[problemName];
+
+  Problem getProblem({String contestId, String problemId}) {
+    final contest = _contests[contestId];
+    if (contest == null) {
+      print('Unknown contest: $contestId');
+      return null;
+    }
+    final problem =
+        contest.problems.where((problem) => problem.id == problemId).first;
+    if (problem == null) {
+      print('Unknown problem: $problemId in contest $contestId');
+      return null;
+    }
+    return problem;
+  }
+
+  List<Contest> get contests => _contests.values.toList();
 
   factory ContestList.fromJson(List<dynamic> json, ProblemList problems) {
     final contests = json
@@ -18,9 +43,15 @@ class ContestList {
     return ContestList(contests);
   }
 
-  Problem getProblemById(String id) {
-    throw UnimplementedError('TODO');
-  }
+  Contest getContestById(String contestId) => _contests[contestId];
 
-  Contest getContestById(int contestId) => _contests[contestId];
+  static Map<String, Problem> _getProblemsByName(List<Contest> contestList) {
+    final res = <String, Problem>{};
+    for (final contest in contestList) {
+      for (final problem in contest.problems) {
+        res[problem.name] = problem;
+      }
+    }
+    return res;
+  }
 }

@@ -3,19 +3,35 @@ import 'dart:math';
 import 'package:cofoda/model/contestList.dart';
 import 'package:cofoda/model/problem.dart';
 
+import 'contest.dart';
+
 // BEWARE: order matters as we pick the last that matches.
-enum ProblemStatus { untried, toUpSolve, tried, solvedPractice, solvedVirtual, solvedLive }
+enum ProblemStatus {
+  untried,
+  toUpSolve,
+  tried,
+  solvedElsewhere,
+  solvedPractice,
+  solvedVirtual,
+  solvedLive
+}
 
-final solvedStatuses = {ProblemStatus.solvedLive, ProblemStatus.solvedVirtual, ProblemStatus.solvedPractice};
+final solvedStatuses = {
+  ProblemStatus.solvedLive,
+  ProblemStatus.solvedVirtual,
+  ProblemStatus.solvedPractice
+};
 
-ProblemStatus _betterStatus(ProblemStatus s1, ProblemStatus s2) => ProblemStatus.values[max(s1.index, s2.index)];
+ProblemStatus _betterStatus(ProblemStatus s1, ProblemStatus s2) =>
+    ProblemStatus.values[max(s1.index, s2.index)];
 
 class Submission {
   final String problemId;
+  final String contestId;
   final DateTime time;
   final ProblemStatus status;
 
-  Submission({this.problemId, this.time, this.status});
+  Submission({this.problemId, this.time, this.status, this.contestId});
 
   factory Submission.fromJson(Map<String, dynamic> json) {
     final problem = Problem.fromJson(json['problem'] as Map<String, dynamic>);
@@ -37,6 +53,7 @@ class Submission {
     final verdict = data['verdict'] as String;
     final participantType = data['participantType'] as String;
     return Submission(
+        contestId: contestId.toString(),
         problemId: contestId.toString() + problemIndex,
         time: DateTime.fromMillisecondsSinceEpoch(
             1000 * (data['creationTimeSeconds'] as int)),
@@ -64,26 +81,32 @@ class Submission {
 }
 
 class AllUserSubmissions {
-  // Map from problem ID (i.e. 1385E) to a set of submissions for that problem.
+  // Map from problem *name* to a set of submissions for that problem.
   final Map<String, List<Submission>> _submissions;
 
   AllUserSubmissions(this._submissions);
 
-  List<Problem> getSubmittedProblems(ContestList contests) => _submissions.keys
-      .map((problemId) => contests.getProblemById(problemId))
+  List<Problem> getSubmittedProblems(ContestList contests) =>
+      _submissions.keys
+      .map((problemName) => contests.getProblemByName(problemName))
       .toList();
 
   List<Submission> submissionsForProblem(Problem problem) =>
-      _submissions.containsKey(problem.id) ? _submissions[problem.id] : [];
+      _submissions.containsKey(problem.name) ? _submissions[problem.name] : [];
 
-  ProblemStatus statusOfProblem(Problem problem, {int ratingLimit}) {
+  ProblemStatus statusOfProblem(Contest contest, Problem problem,
+      {int ratingLimit}) {
     var result = (ratingLimit != null &&
-            problem.rating != null &&
-            problem.rating <= ratingLimit)
+        problem.rating != null &&
+        problem.rating <= ratingLimit)
         ? ProblemStatus.toUpSolve
         : ProblemStatus.untried;
     for (final submission in submissionsForProblem(problem)) {
-      result = _betterStatus(result, submission.status);
+      final submissionStatus =
+      (solvedStatuses.contains(submission.status) &&
+          contest.id != submission.contestId) ?
+      ProblemStatus.solvedElsewhere : submission.status;
+      result = _betterStatus(result, submissionStatus);
     }
     return result;
   }
@@ -102,14 +125,11 @@ class AllUserSubmissions {
         Submission.fromJson(json as Map<String, dynamic>));
     final submittedProblems = submissions.map((submission) =>
     submission.problemId).toSet();
-    return AllUserSubmissions({
-      for (var problem in submittedProblems)
-        problem: submissions.where((submission) =>
-        submission.problemId == problem).toList()
-    });
+    throw UnimplementedError();
   }
 
-  static AllUserSubmissions fromFire(Map<String, dynamic> json) {
+  static AllUserSubmissions fromFire(ContestList contests,
+      Map<String, dynamic> json) {
     if (json == null) {
       return AllUserSubmissions.empty();
     }
@@ -117,13 +137,16 @@ class AllUserSubmissions {
     final List<Submission> submissions = jsonSubmissions.entries
         .map((entry) => Submission.fromFire(entry))
         .toList();
-    final submittedProblems =
-        submissions.map((submission) => submission.problemId).toSet();
-    return AllUserSubmissions({
-      for (var problem in submittedProblems)
-        problem: submissions
-            .where((submission) => submission.problemId == problem)
-            .toList()
-    });
+
+    final submissionsByProblemName = <String, List<Submission>>{};
+    for (final submission in submissions) {
+      final Problem problem = contests.getProblem(
+          contestId: submission.contestId, problemId: submission.problemId);
+      if (problem == null) continue;
+      submissionsByProblemName.putIfAbsent(problem.name, () => [])
+        ..add(submission);
+    }
+
+    return AllUserSubmissions(submissionsByProblemName);
   }
 }

@@ -3,16 +3,23 @@ import 'package:cofoda/model/contest.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Problem implements Comparable<Problem> {
-  final int contestId, rating;
+  final int rating;
+  final String contestId;
   final String index, name, type;
   final List<String> tags;
 
-  Problem({this.contestId, this.index, this.name, this.type, this.rating, this.tags});
+  Problem(
+      {this.contestId,
+      this.index,
+      this.name,
+      this.type,
+      this.rating,
+      this.tags});
 
   String get id => '$contestId$index';
 
   factory Problem.fromJson(Map<String, dynamic> json) => Problem(
-      contestId: json['contestId'] as int,
+      contestId: (json['contestId'] as int).toString(),
       index: json['index'] as String,
       name: json['name'] as String,
       type: json['type'] as String,

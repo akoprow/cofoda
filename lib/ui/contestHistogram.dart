@@ -1,5 +1,6 @@
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:cofoda/data/userDataProvider.dart';
+import 'package:cofoda/data/dataProviders.dart';
+import 'package:cofoda/data/userData.dart';
 import 'package:cofoda/model/contest.dart';
 import 'package:flutter/material.dart';
 
@@ -59,19 +60,18 @@ class ContestHistogram extends StatelessWidget {
   static DateTime _dateOfIndex(int index) =>
       SCORE_ROOT.add(Duration(days: index));
 
-  static charts.RangeAnnotation _usersScoreAnnotations(UsersData users) {
+  static charts.RangeAnnotation _usersScoreAnnotations(BothUsersData users) {
     return charts.RangeAnnotation(
         _scoreFor(users.user) + _scoreFor(users.vsUser));
   }
 
   static List<charts.LineAnnotationSegment<DateTime>> _scoreFor(
-      GenericUserDataProvider user) {
+      GenericUserData user) {
     if (user.isReady()) {
       final scoreAsHours = 24;
       final score = SCORE_ROOT
           .subtract(Duration(hours: 12))
           .add(Duration(hours: scoreAsHours));
-      print(score);
       return [
         charts.LineAnnotationSegment(
             score, charts.RangeAnnotationAxisType.domain,

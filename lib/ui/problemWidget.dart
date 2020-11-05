@@ -1,27 +1,35 @@
 import 'package:cofoda/data/codeforcesAPI.dart';
+import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/submissions.dart';
 import 'package:flutter/material.dart';
 
-Color problemStatusToColor(String user, Data data, Problem problem, {int ratingLimit}) {
-  final status = data.statusOfProblem(user, problem, ratingLimit: ratingLimit);
+Color problemStatusToColor(
+    String user, Data data, Contest contest, Problem problem,
+    {int ratingLimit}) {
+  final status =
+      data.statusOfProblem(user, contest, problem, ratingLimit: ratingLimit);
   return statusToColor(status);
 }
 
 Color statusToColor(ProblemStatus status) {
   switch (status) {
     case ProblemStatus.solvedLive:
-      return Colors.green[500];
+      return Colors.green[600];
     case ProblemStatus.solvedVirtual:
       return Colors.green[300];
     case ProblemStatus.solvedPractice:
       return Colors.green[100];
+    case ProblemStatus.solvedElsewhere:
+      return Colors.white70;
     case ProblemStatus.tried:
-      return Colors.red[200];
+      return Colors.red[300];
     case ProblemStatus.toUpSolve:
-      return Colors.yellow[200];
+      return Colors.yellow[300];
+    case ProblemStatus.untried:
+      return Colors.grey[300];
     default:
-      return Colors.grey[200];
+      throw 'Unknown problem status: $status';
   }
 }
 
@@ -90,15 +98,18 @@ Color problemRatingToColor(Problem problem) => problem.rating != null ? _ratingC
 
 class ProblemWidget extends StatelessWidget {
   final Problem problem;
+  final Contest contest;
   final String user;
   final Data data;
 
-  ProblemWidget(this.user, this.data, this.problem);
+  ProblemWidget(this.user, this.data, this.contest, this.problem);
 
   @override
   Widget build(BuildContext context) {
     final ratingColor = problemRatingToColor(problem);
-    final textColor = ratingColor.computeLuminance() < 0.5 ? Colors.white : Colors.black;
+    final textColor = ratingColor.computeLuminance() < 0.5
+        ? Colors.white
+        : Colors.black;
     final id = Chip(
       label: Text('${problem.contestId}${problem.index}', style: TextStyle(color: textColor)),
       backgroundColor: ratingColor,
@@ -108,7 +119,7 @@ class ProblemWidget extends StatelessWidget {
     final title = Text(problem.name);
     final card = Card(
       child: ListTile(leading: id, title: title, subtitle: tags),
-      color: problemStatusToColor(user, data, problem),
+      color: problemStatusToColor(user, data, contest, problem),
     );
     return GestureDetector(onTap: () => problem.open(), child: card);
   }

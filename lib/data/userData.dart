@@ -3,24 +3,33 @@ import 'dart:convert' as convert;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:cofoda/model/contest.dart';
+import 'package:cofoda/model/contestList.dart';
 import 'package:cofoda/model/problem.dart';
 import 'package:cofoda/model/submissions.dart';
 import 'package:cofoda/ui/problemWidget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 
 enum Type { User, VsUser }
 
-abstract class GenericUserDataProvider extends ChangeNotifier {
+abstract class GenericUserData extends ChangeNotifier {
   static Duration userDataRefreshDuration = Duration(seconds: 15);
 
   String handle;
   bool isLoading = false;
   AllUserSubmissions submissions = AllUserSubmissions.empty();
+  ContestList _contests;
   int numProcessed;
   Timer timer;
+
+  GenericUserData(this._contests);
+
+  void setContests(ContestList contests) {
+    _contests = contests;
+    notifyListeners();
+  }
 
   Color get color;
 
@@ -55,16 +64,17 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
 
   Type type();
 
-  Color problemStatusToColor(Problem problem, {int ratingLimit}) {
+  Color problemStatusToColor(Contest contest, Problem problem,
+      {int ratingLimit}) {
     final status =
-        submissions.statusOfProblem(problem, ratingLimit: ratingLimit);
+        submissions.statusOfProblem(contest, problem, ratingLimit: ratingLimit);
     return statusToColor(status);
   }
 
   void _update(DocumentSnapshot event) {
     if (event.exists) {
       print('Got new data for user: $handle');
-      submissions = AllUserSubmissions.fromFire(event.data());
+      submissions = AllUserSubmissions.fromFire(_contests, event.data());
       numProcessed = _getNumProcessed(event.data());
       setLoading(false);
     } else {
@@ -131,7 +141,9 @@ abstract class GenericUserDataProvider extends ChangeNotifier {
   }
 }
 
-class UserDataProvider extends GenericUserDataProvider {
+class UserData extends GenericUserData {
+  UserData(ContestList contests) : super(contests);
+
   @override
   Type type() => Type.User;
 
@@ -139,22 +151,12 @@ class UserDataProvider extends GenericUserDataProvider {
   Color get color => Colors.blue[200];
 }
 
-class VsUserDataProvider extends GenericUserDataProvider {
+class VsUserData extends GenericUserData {
+  VsUserData(ContestList contests) : super(contests);
+
   @override
   Type type() => Type.VsUser;
 
   @override
   Color get color => Colors.pink[200];
-}
-
-class UsersData {
-  final UserDataProvider user;
-  final VsUserDataProvider vsUser;
-
-  UsersData(this.user, this.vsUser);
-}
-
-Widget withUsers(Widget Function(UsersData users) f) {
-  return Consumer2<UserDataProvider, VsUserDataProvider>(
-      builder: (_, user, vsUser, __) => f(UsersData(user, vsUser)));
 }

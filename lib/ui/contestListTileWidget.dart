@@ -1,4 +1,4 @@
-import 'package:cofoda/data/userDataProvider.dart';
+import 'package:cofoda/data/dataProviders.dart';
 import 'package:cofoda/main.dart';
 import 'package:cofoda/model/contest.dart';
 import 'package:cofoda/model/problem.dart';
@@ -52,11 +52,11 @@ class ContestListTileWidget extends StatelessWidget {
       final user = userData.user;
       final vsUser = userData.vsUser;
       if (user.isReady()) {
-        final color1 =
-            user.problemStatusToColor(problem, ratingLimit: _ratingLimit);
+        final color1 = user.problemStatusToColor(_contest, problem,
+            ratingLimit: _ratingLimit);
         if (vsUser.isReady()) {
-          final color2 =
-              vsUser.problemStatusToColor(problem, ratingLimit: _ratingLimit);
+          final color2 = vsUser.problemStatusToColor(_contest, problem,
+              ratingLimit: _ratingLimit);
           final text = '${problem.index} | ${problem.index}';
           return Chip2(
               label: Text(text),

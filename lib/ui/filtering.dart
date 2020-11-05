@@ -1,6 +1,4 @@
-import 'package:cofoda/data/codeforcesAPI.dart';
 import 'package:cofoda/model/problem.dart';
-import 'package:cofoda/model/submissions.dart';
 
 abstract class Filter {
   const Filter();
@@ -17,6 +15,7 @@ class FilterByRating extends Filter {
   bool test(Problem problem) => problem.rating != null && problem.rating >= from && problem.rating <= to;
 }
 
+/*
 class FilterByStatus extends Filter {
   final String user;
   final Set<ProblemStatus> acceptedStatus;
@@ -26,9 +25,10 @@ class FilterByStatus extends Filter {
 
   @override
   bool test(Problem problem) {
-    return acceptedStatus.contains(data.statusOfProblem(user, problem));
+    return acceptedStatus.contains(data.statusOfProblem(contest, user, problem));
   }
 }
+*/
 
 class CompositeFilter extends Filter {
   final List<Filter> filters;

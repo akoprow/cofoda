@@ -2,7 +2,6 @@ import 'dart:core';
 
 import 'package:cofoda/data/codeforcesAPI.dart';
 import 'package:cofoda/model/problem.dart';
-import 'package:cofoda/model/submissions.dart';
 import 'package:cofoda/ui/filtering.dart';
 import 'package:cofoda/ui/grouping.dart';
 import 'package:cofoda/ui/problemWidget.dart';
@@ -122,13 +121,16 @@ class LoadedProblemsListWidgetState extends State<LoadedProblemsListWidget> {
   Filter _getProblemFilter() =>
       CompositeFilter([
         FilterByRating(1400, 1600),
-        FilterByStatus(widget.user, widget.data, {ProblemStatus.untried})
+//        FilterByStatus(widget.user, widget.data, {ProblemStatus.untried})
       ]);
 
   Grouper<String> _getProblemGrouper() => GroupByProblemType();
 
   Widget _showProblems(Iterable<Problem> problems) {
-    final problemWidgets = problems.map((problem) => ProblemWidget(widget.user, widget.data, problem)).toList();
+    final problemWidgets = problems
+        .map(
+            (problem) => ProblemWidget(widget.user, widget.data, null, problem))
+        .toList();
     return Padding(
         padding: EdgeInsets.all(10),
         child: GridView.extent(

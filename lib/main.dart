@@ -1,5 +1,5 @@
-import 'package:cofoda/data/contestsProvider.dart';
-import 'package:cofoda/data/userDataProvider.dart';
+import 'package:cofoda/data/dataProviders.dart';
+import 'package:cofoda/data/userData.dart';
 import 'package:cofoda/ui/contestsListScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fluro/fluro.dart' as fluro;
@@ -8,13 +8,9 @@ import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  final providers = [
-    StreamProvider(create: (_) => ContestsProvider.stream()),
-    ChangeNotifierProvider(create: (_) => UserDataProvider()),
-    ChangeNotifierProvider(create: (_) => VsUserDataProvider())
-  ];
   runApp(Initialize(
-      body: MultiProvider(providers: providers, child: AppComponent())));
+      body:
+          MultiProvider(providers: allDataProviders(), child: AppComponent())));
 }
 
 class Initialize extends StatelessWidget {
@@ -79,8 +75,8 @@ class AppComponentState extends State<AppComponent> {
   void _setUsersFromParams(
       BuildContext context, Map<String, List<String>> params) {
     final String usersString = params[usersQueryParam]?.first;
-    final userProvider = context.watch<UserDataProvider>();
-    final vsUserProvider = context.watch<VsUserDataProvider>();
+    final userProvider = context.watch<UserData>();
+    final vsUserProvider = context.watch<VsUserData>();
 
     if (usersString == null || usersString.isEmpty) {
       userProvider.setHandle(null);
