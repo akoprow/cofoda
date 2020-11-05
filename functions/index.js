@@ -260,13 +260,15 @@ async function loadUser(user) {
 }
 
 function processSubmission(s) {
-  return {
+  const res = {
     contestId: s.contestId,
     problemIndex: s.problem.index,
     participantType: s.author.participantType,
     verdict: s.verdict,
     timeConsumedMillis: s.timeConsumedMillis,
     memoryConsumedBytes: s.memoryConsumedBytes,
-    creationTimeSeconds: s.creationTimeSeconds
+    creationTimeSeconds: s.creationTimeSeconds,
   };
+  if (s.points) res.points = s.points;
+  return res;
 }
