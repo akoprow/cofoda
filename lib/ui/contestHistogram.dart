@@ -75,7 +75,7 @@ class ContestHistogram extends StatelessWidget {
       return [
         charts.LineAnnotationSegment(
             score, charts.RangeAnnotationAxisType.domain,
-            strokeWidthPx: 3.0, color: _chartsColor(user.color))
+            strokeWidthPx: 2.0, color: _chartsColor(user.color))
       ];
     } else {
       return [];

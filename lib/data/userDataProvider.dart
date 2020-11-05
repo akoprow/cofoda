@@ -136,7 +136,7 @@ class UserDataProvider extends GenericUserDataProvider {
   Type type() => Type.User;
 
   @override
-  Color get color => Colors.blue[300];
+  Color get color => Colors.blue[200];
 }
 
 class VsUserDataProvider extends GenericUserDataProvider {
@@ -144,7 +144,7 @@ class VsUserDataProvider extends GenericUserDataProvider {
   Type type() => Type.VsUser;
 
   @override
-  Color get color => Colors.brown[300];
+  Color get color => Colors.pink[200];
 }
 
 class UsersData {
