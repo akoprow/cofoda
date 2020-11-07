@@ -24,6 +24,9 @@ const config = {
     maxBuckets: 25,
     maxScore: 0.5  // expressed as max points to be scored in the contest
   },
+  // extra submissions to fetch to counterbalance race conditions between the
+  // time we ask for user submissions and the time we fetch them.
+  userSubmissionsFetchingSafetyMargin: 2,
   forbiddenContests: [
     693, 726, 728, 826, 857, 874, 885, 905, 1048, 1049, 1050, 1094, 1222, 1224,
     1226, 1258, 1412
@@ -243,8 +246,9 @@ async function loadUser(user) {
     };
   }
 
-  const url = `https://codeforces.com/api/user.status?handle=${user}&count=${missingSubmissions}`;
-  console.log(`Fetching user ${user}, new submissions: ${missingSubmissions}, url: ${url}`);
+  const count = missingSubmissions + config.userSubmissionsFetchingSafetyMargin
+  const url = `https://codeforces.com/api/user.status?handle=${user}&count=${count}`;
+  console.log(`Fetching user ${user}, url: ${url}`);
   const response = await http.get(url);
   const data = response.data.result;
 
