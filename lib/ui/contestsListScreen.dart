@@ -79,7 +79,7 @@ class ContestsListWidget extends StatelessWidget {
       return Container();
     }
     final genStats = (GenericUserData user) =>
-    user.isReady() ? _computeStatsForUser(contests, user) : null;
+        user.isPresent() ? _computeStatsForUser(contests, user) : null;
     final stats = genStats(user);
     final vsStats = genStats(vsUser);
     final userLabels = vsUser.isPresent()

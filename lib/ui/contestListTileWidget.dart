@@ -51,10 +51,10 @@ class ContestListTileWidget extends StatelessWidget {
     return withUsers((userData) {
       final user = userData.user;
       final vsUser = userData.vsUser;
-      if (user.isReady()) {
+      if (user.isPresent()) {
         final color1 = user.problemStatusToColor(_contest, problem,
             ratingLimit: _ratingLimit);
-        if (vsUser.isReady()) {
+        if (vsUser.isPresent()) {
           final color2 = vsUser.problemStatusToColor(_contest, problem,
               ratingLimit: _ratingLimit);
           final text = '${problem.index} | ${problem.index}';

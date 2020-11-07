@@ -67,7 +67,7 @@ class ContestHistogram extends StatelessWidget {
 
   static List<charts.LineAnnotationSegment<DateTime>> _scoreFor(
       GenericUserData user) {
-    if (false && user.isReady()) {
+    if (false && user.isPresent()) {
       final scoreAsHours = 24;
       final score = SCORE_ROOT
           .subtract(Duration(hours: 12))
