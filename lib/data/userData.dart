@@ -19,7 +19,6 @@ abstract class GenericUserData extends ChangeNotifier {
 
   String handle;
   bool isLoading = false;
-  bool waitingForFirebase = false;
   AllUserSubmissions submissions = AllUserSubmissions.empty();
   ContestList _contests;
   Timer timer;
@@ -43,7 +42,6 @@ abstract class GenericUserData extends ChangeNotifier {
     }
 
     handle = newHandle;
-    waitingForFirebase = true;
     timer?.cancel();
 
     if (handle != null) {
@@ -81,13 +79,12 @@ abstract class GenericUserData extends ChangeNotifier {
       submissions = AllUserSubmissions.empty();
     }
 
-    waitingForFirebase = false;
     setLoading(false);
     _maybeRefreshUserData();
   }
 
   void _maybeRefreshUserData() async {
-    if (waitingForFirebase) {
+    if (isLoading) {
       return;
     }
     final client = http.Client();
@@ -115,10 +112,9 @@ abstract class GenericUserData extends ChangeNotifier {
   }
 
   void _refreshUserData() async {
-    waitingForFirebase = true;
+    setLoading(true);
     print('Refreshing user: $handle');
     final args = <String, dynamic>{'user': handle};
-    setLoading(true);
     await FirebaseFunctions.instance
         .httpsCallable('refreshUserData')
         .call<dynamic>(args);

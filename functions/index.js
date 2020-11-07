@@ -234,14 +234,20 @@ async function loadUser(user) {
   const userRef = db.collection('users').doc(user);
   const userData = await userRef.get();
   const oldSubmissions = (userData.exists) ? userData.data().submissions : {};
-  const from = 1 + _.keys(oldSubmissions).length;
+  const missingSubmissions = await countMissingSubmissions(user, oldSubmissions);
 
-  const url = `https://codeforces.com/api/user.status?handle=${user}&from=${from}`;
+  if (missingSubmissions === 0) {
+    return {
+      user: user,
+      newSubmissions: 0
+    };
+  }
+
+  const url = `https://codeforces.com/api/user.status?handle=${user}&count=${missingSubmissions}`;
+  console.log(`Fetching user ${user}, new submissions: ${missingSubmissions}, url: ${url}`);
   const response = await http.get(url);
   const data = response.data.result;
 
-  const newSubmissionsNum = data.length;
-  console.log(`Fetching user ${user} starting from submission ${from}, new submissions: ${newSubmissionsNum}.`);
   const newSubmissions = _.fromPairs(_.map(data, (s) => [s.id, processSubmission(s)]));
   const allSubmissions = _.merge(oldSubmissions, newSubmissions);
   const newData = {
@@ -255,8 +261,16 @@ async function loadUser(user) {
 
   return {
     user: user,
-    newSubmissions: newSubmissionsNum
+    newSubmissions: data.length
   };
+}
+
+async function countMissingSubmissions(user, oldSubmissions) {
+  const from = 1 + _.keys(oldSubmissions).length;
+  const url = `https://codeforces.com/api/user.status?handle=${user}&from=${from}`;
+  const response = await http.get(url);
+  const data = response.data.result;
+  return data.length;
 }
 
 function processSubmission(s) {
