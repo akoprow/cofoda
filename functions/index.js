@@ -233,21 +233,21 @@ async function loadProblem(problem) {
 async function loadUser(user) {
   const userRef = db.collection('users').doc(user);
   const userData = await userRef.get();
-  const from = 1 + ((userData.exists) ? userData.data().meta.numProcessed : 0);
   const oldSubmissions = (userData.exists) ? userData.data().submissions : {};
-  console.log(`Fetching user ${user} starting from submission ${from}.`);
+  const from = 1 + _.keys(oldSubmissions).length;
 
   const url = `https://codeforces.com/api/user.status?handle=${user}&from=${from}`;
   const response = await http.get(url);
   const data = response.data.result;
 
   const newSubmissionsNum = data.length;
+  console.log(`Fetching user ${user} starting from submission ${from}, new submissions: ${newSubmissionsNum}.`);
   const newSubmissions = _.fromPairs(_.map(data, (s) => [s.id, processSubmission(s)]));
   const allSubmissions = _.merge(oldSubmissions, newSubmissions);
   const newData = {
     meta: {
-      numProcessed: _.keys(allSubmissions).length,
-      timesFetched: FieldValue.increment(1),
+      timesRefreshed: FieldValue.increment(1),
+      lastFetched: FieldValue.serverTimestamp()
     },
     submissions: allSubmissions
   };

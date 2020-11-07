@@ -19,9 +19,9 @@ abstract class GenericUserData extends ChangeNotifier {
 
   String handle;
   bool isLoading = false;
+  bool gotFirebaseResponse = false;
   AllUserSubmissions submissions = AllUserSubmissions.empty();
   ContestList _contests;
-  int numProcessed;
   Timer timer;
 
   GenericUserData(this._contests);
@@ -43,6 +43,7 @@ abstract class GenericUserData extends ChangeNotifier {
     }
 
     handle = newHandle;
+    gotFirebaseResponse = false;
     timer?.cancel();
 
     if (handle != null) {
@@ -72,27 +73,28 @@ abstract class GenericUserData extends ChangeNotifier {
   }
 
   void _update(DocumentSnapshot event) {
+    gotFirebaseResponse = true;
     if (event.exists) {
-      print('Got new data for user: $handle');
       submissions = AllUserSubmissions.fromFire(_contests, event.data());
-      numProcessed = _getNumProcessed(event.data());
+      print('Got new data for user: $handle, submissions: ${submissions.size}');
       setLoading(false);
     } else {
       print('No data for user: $handle');
       setLoading(true);
-      numProcessed = 0;
+      submissions = AllUserSubmissions.empty();
       _maybeRefreshUserData();
     }
   }
 
   void _maybeRefreshUserData() async {
-    if (numProcessed == null) {
-      return;
+    if (!gotFirebaseResponse) {
+      return
     }
     final client = http.Client();
     var refresh = false;
     final url =
-        'https://codeforces.com/api/user.status?handle=${handle}&from=${numProcessed + 1 ?? 0}';
+        'https://codeforces.com/api/user.status?handle=${handle}&from=${submissions
+        .size + 1}';
     try {
       final response = await client.get(url);
       if (response.statusCode == 200) {
@@ -119,15 +121,6 @@ abstract class GenericUserData extends ChangeNotifier {
     await FirebaseFunctions.instance
         .httpsCallable('refreshUserData')
         .call<dynamic>(args);
-  }
-
-  int _getNumProcessed(Map<String, dynamic> data) {
-    if (data == null || !data.containsKey('meta')) {
-      return 0;
-    } else {
-      final meta = data['meta'] as Map<String, dynamic>;
-      return meta['numProcessed'] as int;
-    }
   }
 
   void setLoading(bool loading) {

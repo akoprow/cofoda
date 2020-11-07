@@ -26,12 +26,18 @@ ProblemStatus _betterStatus(ProblemStatus s1, ProblemStatus s2) =>
     ProblemStatus.values[max(s1.index, s2.index)];
 
 class Submission {
+  final String submissionId;
   final String problemId;
   final String contestId;
   final DateTime time;
   final ProblemStatus status;
 
-  Submission({this.problemId, this.time, this.status, this.contestId});
+  Submission(
+      {this.problemId,
+      this.time,
+      this.status,
+      this.contestId,
+      this.submissionId});
 
   factory Submission.fromJson(Map<String, dynamic> json) {
     final problem = Problem.fromJson(json['problem'] as Map<String, dynamic>);
@@ -55,13 +61,13 @@ class Submission {
     return Submission(
         contestId: contestId.toString(),
         problemId: contestId.toString() + problemIndex,
+        submissionId: entry.key,
         time: DateTime.fromMillisecondsSinceEpoch(
             1000 * (data['creationTimeSeconds'] as int)),
         status: _parseProblemStatus(verdict, participantType));
   }
 
-  static ProblemStatus _parseProblemStatus(
-      String verdict, String participantType) {
+  static ProblemStatus _parseProblemStatus(String verdict, String participantType) {
     if (verdict != 'OK') {
       return ProblemStatus.tried;
     } else {
@@ -83,11 +89,13 @@ class Submission {
 class AllUserSubmissions {
   // Map from problem *name* to a set of submissions for that problem.
   final Map<String, List<Submission>> _submissions;
+  final int _size;
 
-  AllUserSubmissions(this._submissions);
+  AllUserSubmissions(this._submissions, this._size);
 
-  List<Problem> getSubmittedProblems(ContestList contests) =>
-      _submissions.keys
+  int get size => _size;
+
+  List<Problem> getSubmittedProblems(ContestList contests) => _submissions.keys
       .map((problemName) => contests.getProblemByName(problemName))
       .toList();
 
@@ -118,7 +126,7 @@ class AllUserSubmissions {
     return null;
   }
 
-  factory AllUserSubmissions.empty() => AllUserSubmissions({});
+  factory AllUserSubmissions.empty() => AllUserSubmissions({}, 0);
 
   factory AllUserSubmissions.fromJson(List<dynamic> json) {
     final submissions = json.map((dynamic json) =>
@@ -142,11 +150,14 @@ class AllUserSubmissions {
     for (final submission in submissions) {
       final Problem problem = contests.getProblem(
           contestId: submission.contestId, problemId: submission.problemId);
-      if (problem == null) continue;
+      if (problem == null) {
+        continue;
+      }
       submissionsByProblemName.putIfAbsent(problem.name, () => [])
         ..add(submission);
     }
 
-    return AllUserSubmissions(submissionsByProblemName);
+    return AllUserSubmissions(
+        submissionsByProblemName, jsonSubmissions.keys.length);
   }
 }
