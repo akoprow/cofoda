@@ -1,4 +1,4 @@
-import 'package:cofoda/model/problem.dart';
+import 'package:dashforces/model/problem.dart';
 
 class ProblemList {
   final List<Problem> problems;

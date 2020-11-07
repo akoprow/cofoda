@@ -1,7 +1,7 @@
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:cofoda/data/dataProviders.dart';
-import 'package:cofoda/data/userData.dart';
-import 'package:cofoda/model/contest.dart';
+import 'package:dashforces/data/dataProviders.dart';
+import 'package:dashforces/data/userData.dart';
+import 'package:dashforces/model/contest.dart';
 import 'package:flutter/material.dart';
 
 class ContestHistogram extends StatelessWidget {

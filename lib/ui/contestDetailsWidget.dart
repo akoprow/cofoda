@@ -1,7 +1,7 @@
 import 'dart:core';
 
-import 'package:cofoda/data/codeforcesAPI.dart';
-import 'package:cofoda/ui/utils.dart';
+import 'package:dashforces/data/codeforcesAPI.dart';
+import 'package:dashforces/ui/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';

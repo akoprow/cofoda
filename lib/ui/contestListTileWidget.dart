@@ -1,9 +1,9 @@
-import 'package:cofoda/data/dataProviders.dart';
-import 'package:cofoda/main.dart';
-import 'package:cofoda/model/contest.dart';
-import 'package:cofoda/model/problem.dart';
-import 'package:cofoda/model/submissions.dart';
-import 'package:cofoda/ui/problemWidget.dart';
+import 'package:dashforces/data/dataProviders.dart';
+import 'package:dashforces/main.dart';
+import 'package:dashforces/model/contest.dart';
+import 'package:dashforces/model/problem.dart';
+import 'package:dashforces/model/submissions.dart';
+import 'package:dashforces/ui/problemWidget.dart';
 import 'package:flutter/material.dart';
 
 import 'chip2.dart';

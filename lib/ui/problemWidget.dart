@@ -1,7 +1,7 @@
-import 'package:cofoda/data/codeforcesAPI.dart';
-import 'package:cofoda/model/contest.dart';
-import 'package:cofoda/model/problem.dart';
-import 'package:cofoda/model/submissions.dart';
+import 'package:dashforces/data/codeforcesAPI.dart';
+import 'package:dashforces/model/contest.dart';
+import 'package:dashforces/model/problem.dart';
+import 'package:dashforces/model/submissions.dart';
 import 'package:flutter/material.dart';
 
 Color problemStatusToColor(

@@ -38,7 +38,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.littlebigstudio.cofoda"
+        applicationId "com.littlebigstudio.dashforces"
         minSdkVersion 21
         targetSdkVersion 28
         versionCode flutterVersionCode.toInteger()

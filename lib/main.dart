@@ -1,6 +1,6 @@
-import 'package:cofoda/data/dataProviders.dart';
-import 'package:cofoda/data/userData.dart';
-import 'package:cofoda/ui/contestsListScreen.dart';
+import 'package:dashforces/data/dataProviders.dart';
+import 'package:dashforces/data/userData.dart';
+import 'package:dashforces/ui/contestsListScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fluro/fluro.dart' as fluro;
 import 'package:flutter/material.dart';

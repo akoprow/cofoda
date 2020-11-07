@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:convert' as convert;
 
-import 'package:cofoda/model/contest.dart';
-import 'package:cofoda/model/contestList.dart';
-import 'package:cofoda/model/problemList.dart';
-import 'package:cofoda/model/submissions.dart';
+import 'package:dashforces/model/contest.dart';
+import 'package:dashforces/model/contestList.dart';
+import 'package:dashforces/model/problem.dart';
+import 'package:dashforces/model/problemList.dart';
+import 'package:dashforces/model/submissions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-
-import '../model/problem.dart';
 
 class Data {
   final ProblemList problemList;

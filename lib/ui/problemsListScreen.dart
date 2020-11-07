@@ -1,11 +1,11 @@
 import 'dart:core';
 
-import 'package:cofoda/data/codeforcesAPI.dart';
-import 'package:cofoda/model/problem.dart';
-import 'package:cofoda/ui/filtering.dart';
-import 'package:cofoda/ui/grouping.dart';
-import 'package:cofoda/ui/problemWidget.dart';
-import 'package:cofoda/ui/utils.dart';
+import 'package:dashforces/data/codeforcesAPI.dart';
+import 'package:dashforces/model/problem.dart';
+import 'package:dashforces/ui/filtering.dart';
+import 'package:dashforces/ui/grouping.dart';
+import 'package:dashforces/ui/problemWidget.dart';
+import 'package:dashforces/ui/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';

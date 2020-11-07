@@ -1,6 +1,6 @@
-import 'package:cofoda/data/contestsData.dart';
-import 'package:cofoda/data/userData.dart';
-import 'package:cofoda/model/contestList.dart';
+import 'package:dashforces/data/contestsData.dart';
+import 'package:dashforces/data/userData.dart';
+import 'package:dashforces/model/contestList.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';

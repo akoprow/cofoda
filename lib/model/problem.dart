@@ -1,5 +1,5 @@
-import 'package:cofoda/data/codeforcesAPI.dart';
-import 'package:cofoda/model/contest.dart';
+import 'package:dashforces/data/codeforcesAPI.dart';
+import 'package:dashforces/model/contest.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Problem implements Comparable<Problem> {

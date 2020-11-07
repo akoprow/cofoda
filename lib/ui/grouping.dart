@@ -1,17 +1,20 @@
-import 'package:cofoda/data/codeforcesAPI.dart';
-import 'package:cofoda/model/contest.dart';
-import 'package:cofoda/model/problem.dart';
-import 'package:cofoda/ui/filtering.dart';
+import 'package:dashforces/data/codeforcesAPI.dart';
+import 'package:dashforces/model/contest.dart';
+import 'package:dashforces/model/problem.dart';
+import 'package:dashforces/ui/filtering.dart';
 
 abstract class Group<T> {
   final List<Problem> matchingProblems;
   final List<Problem> displayableProblems;
   bool isExpanded;
 
-  Group(List<Problem> allProblems, Filter problemFilter, bool Function(Problem) groupMembership)
-      : this._fromMatchingProblems(allProblems.where(groupMembership).toList(), problemFilter);
+  Group(List<Problem> allProblems, Filter problemFilter,
+      bool Function(Problem) groupMembership)
+      : this._fromMatchingProblems(
+            allProblems.where(groupMembership).toList(), problemFilter);
 
-  Group._fromMatchingProblems(List<Problem> matchingProblems, Filter problemFilter)
+  Group._fromMatchingProblems(
+      List<Problem> matchingProblems, Filter problemFilter)
       : this._fromProblems(matchingProblems, matchingProblems.where(problemFilter.test).toList());
 
   Group._fromProblems(this.matchingProblems, this.displayableProblems) : isExpanded = displayableProblems.isNotEmpty;

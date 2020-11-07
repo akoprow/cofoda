@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:cofoda/model/contestList.dart';
-import 'package:cofoda/model/problem.dart';
+import 'package:dashforces/model/contestList.dart';
+import 'package:dashforces/model/problem.dart';
 
 import 'contest.dart';
 

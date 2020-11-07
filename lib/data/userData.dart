@@ -3,11 +3,11 @@ import 'dart:convert' as convert;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:cofoda/model/contest.dart';
-import 'package:cofoda/model/contestList.dart';
-import 'package:cofoda/model/problem.dart';
-import 'package:cofoda/model/submissions.dart';
-import 'package:cofoda/ui/problemWidget.dart';
+import 'package:dashforces/model/contest.dart';
+import 'package:dashforces/model/contestList.dart';
+import 'package:dashforces/model/problem.dart';
+import 'package:dashforces/model/submissions.dart';
+import 'package:dashforces/ui/problemWidget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;

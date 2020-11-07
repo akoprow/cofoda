@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:95619617777:android:8887f3cd41d09a23d62a50",
+        "mobilesdk_app_id": "1:95619617777:android:070254149add88bcd62a50",
         "android_client_info": {
-          "package_name": "com.littlebigstudio.cofoda"
+          "package_name": "com.littlebigstudio.dashforces"
         }
       },
       "oauth_client": [
@@ -21,7 +21,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyB_SMIb4KdUkDmFUPHd2H9HeaPoI8qX_qc"
+          "current_key": "AIzaSyBTkMptKbFCTcitP9K16wIkURUwmuuydYw"
         }
       ],
       "services": {

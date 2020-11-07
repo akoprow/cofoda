@@ -1,6 +1,6 @@
-import 'package:cofoda/model/contest.dart';
-import 'package:cofoda/model/problem.dart';
-import 'package:cofoda/model/problemList.dart';
+import 'package:dashforces/model/contest.dart';
+import 'package:dashforces/model/problem.dart';
+import 'package:dashforces/model/problemList.dart';
 
 class ContestList {
   // contest id -> contest

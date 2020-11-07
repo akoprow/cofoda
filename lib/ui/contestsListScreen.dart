@@ -1,13 +1,13 @@
 import 'dart:core';
 
-import 'package:cofoda/data/codeforcesAPI.dart';
-import 'package:cofoda/data/dataProviders.dart';
-import 'package:cofoda/data/userData.dart';
-import 'package:cofoda/model/contest.dart';
-import 'package:cofoda/model/contestList.dart';
-import 'package:cofoda/model/submissions.dart';
-import 'package:cofoda/ui/contestListTileWidget.dart';
-import 'package:cofoda/ui/problemWidget.dart';
+import 'package:dashforces/data/codeforcesAPI.dart';
+import 'package:dashforces/data/dataProviders.dart';
+import 'package:dashforces/data/userData.dart';
+import 'package:dashforces/model/contest.dart';
+import 'package:dashforces/model/contestList.dart';
+import 'package:dashforces/model/submissions.dart';
+import 'package:dashforces/ui/contestListTileWidget.dart';
+import 'package:dashforces/ui/problemWidget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';

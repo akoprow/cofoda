@@ -1,7 +1,7 @@
-import 'package:cofoda/data/codeforcesAPI.dart';
-import 'package:cofoda/ui/userProblemsByRatingChart.dart';
-import 'package:cofoda/ui/userProblemsOverTimeChart.dart';
-import 'package:cofoda/ui/utils.dart';
+import 'package:dashforces/data/codeforcesAPI.dart';
+import 'package:dashforces/ui/userProblemsByRatingChart.dart';
+import 'package:dashforces/ui/userProblemsOverTimeChart.dart';
+import 'package:dashforces/ui/utils.dart';
 import 'package:flutter/material.dart';
 
 class UserDetailsWidget extends StatelessWidget {
@@ -10,8 +10,9 @@ class UserDetailsWidget extends StatelessWidget {
   UserDetailsWidget({this.users});
 
   @override
-  Widget build(BuildContext context) =>
-      showFuture(CodeforcesAPI().load(users: users), (Data data) => LoadedUserDetailsWidget(data: data, users: users));
+  Widget build(BuildContext context) => showFuture(
+      CodeforcesAPI().load(users: users),
+      (Data data) => LoadedUserDetailsWidget(data: data, users: users));
 }
 
 class LoadedUserDetailsWidget extends StatefulWidget {

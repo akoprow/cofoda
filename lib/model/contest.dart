@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cofoda/model/problem.dart';
-import 'package:cofoda/model/problemList.dart';
+import 'package:dashforces/model/problem.dart';
+import 'package:dashforces/model/problemList.dart';
 
 class ContestResults {
   final Map<int, int> pointDistribution;
