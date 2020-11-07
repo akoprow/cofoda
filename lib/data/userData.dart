@@ -73,22 +73,22 @@ abstract class GenericUserData extends ChangeNotifier {
   }
 
   void _update(DocumentSnapshot event) {
-    gotFirebaseResponse = true;
     if (event.exists) {
       submissions = AllUserSubmissions.fromFire(_contests, event.data());
       print('Got new data for user: $handle, submissions: ${submissions.size}');
-      setLoading(false);
     } else {
       print('No data for user: $handle');
-      setLoading(true);
       submissions = AllUserSubmissions.empty();
-      _maybeRefreshUserData();
     }
+
+    gotFirebaseResponse = true;
+    setLoading(false);
+    _maybeRefreshUserData();
   }
 
   void _maybeRefreshUserData() async {
     if (!gotFirebaseResponse) {
-      return
+      return;
     }
     final client = http.Client();
     var refresh = false;
