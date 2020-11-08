@@ -138,7 +138,7 @@ class AllUserSubmissions {
 
   static AllUserSubmissions fromFire(ContestList contests,
       Map<String, dynamic> json) {
-    if (json == null) {
+    if (json == null || contests == null) {
       return AllUserSubmissions.empty();
     }
     final jsonSubmissions = json['submissions'] as Map<String, dynamic>;
