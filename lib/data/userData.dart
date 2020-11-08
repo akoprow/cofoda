@@ -11,11 +11,14 @@ import 'package:dashforces/ui/problemWidget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:synchronized/synchronized.dart';
 
 enum Type { User, VsUser }
 
 abstract class GenericUserData extends ChangeNotifier {
   static Duration userDataRefreshDuration = Duration(seconds: 15);
+
+  final lock = Lock();
 
   String handle;
   bool isLoading = false;
@@ -45,17 +48,16 @@ abstract class GenericUserData extends ChangeNotifier {
     timer?.cancel();
 
     if (handle != null) {
-      print('Setting up timer for GenericUserDataProvider<$handle>');
-      _maybeRefreshUserData();
-      timer = Timer.periodic(userDataRefreshDuration, (_) {
-        _maybeRefreshUserData();
-      });
       setLoading(true);
+      print('Setting up timer for GenericUserDataProvider<$handle>');
+      timer = Timer.periodic(userDataRefreshDuration, (_) {
+        lock.synchronized(() async => await _checkIfRefreshNeeded());
+      });
       FirebaseFirestore.instance
           .collection('users')
           .doc(newHandle)
           .snapshots()
-          .listen(_update);
+          .listen((data) => lock.synchronized(() async => await _update(data)));
     } else {
       setLoading(false);
     }
@@ -80,18 +82,17 @@ abstract class GenericUserData extends ChangeNotifier {
     }
 
     setLoading(false);
-    _maybeRefreshUserData();
+    _checkIfRefreshNeeded();
   }
 
-  void _maybeRefreshUserData() async {
+  void _checkIfRefreshNeeded() async {
     if (isLoading) {
       return;
     }
     final client = http.Client();
     var refresh = false;
     final url =
-        'https://codeforces.com/api/user.status?handle=${handle}&from=${submissions
-        .size + 1}';
+        'https://codeforces.com/api/user.status?handle=${handle}&from=${submissions.size + 1}';
     try {
       final response = await client.get(url);
       if (response.statusCode == 200) {

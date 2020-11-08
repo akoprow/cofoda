@@ -17,6 +17,7 @@ dependencies:
   fluro: ^1.6.3
   http: ^0.12.1
   provider: ^4.3.2+2
+  synchronized: ^2.2.0+2
   url_launcher: ^5.5.0
   flutter:
     sdk: flutter
