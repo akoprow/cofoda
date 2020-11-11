@@ -2,6 +2,7 @@ import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:dashforces/data/dataProviders.dart';
 import 'package:dashforces/data/userData.dart';
 import 'package:dashforces/model/contest.dart';
+import 'package:dashforces/ui/utils.dart';
 import 'package:flutter/material.dart';
 
 class ContestHistogram extends StatelessWidget {
@@ -36,7 +37,7 @@ class ContestHistogram extends StatelessWidget {
       id: 'Contest results',
       domainFn: (_, int index) => _dateOfIndex(index),
       measureFn: (int numPeople, _) => numPeople,
-      colorFn: (_1, _2) => _chartsColor(Colors.grey[700]),
+      colorFn: (_1, _2) => chartsColorOfMaterial(Colors.grey[700]),
       data: data,
     );
 
@@ -75,13 +76,10 @@ class ContestHistogram extends StatelessWidget {
       return [
         charts.LineAnnotationSegment(
             score, charts.RangeAnnotationAxisType.domain,
-            strokeWidthPx: 2.0, color: _chartsColor(user.color))
+            strokeWidthPx: 2.0, color: chartsColorOfMaterial(user.color))
       ];
     } else {
       return [];
     }
   }
 }
-
-charts.Color _chartsColor(Color c) =>
-    charts.Color(r: c.red, g: c.green, b: c.blue, a: c.alpha);

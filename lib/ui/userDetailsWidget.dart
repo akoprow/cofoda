@@ -1,53 +1,34 @@
-import 'package:dashforces/data/codeforcesAPI.dart';
+import 'package:dashforces/data/dataProviders.dart';
 import 'package:dashforces/ui/userProblemsByRatingChart.dart';
 import 'package:dashforces/ui/userProblemsOverTimeChart.dart';
-import 'package:dashforces/ui/utils.dart';
 import 'package:flutter/material.dart';
 
 class UserDetailsWidget extends StatelessWidget {
-  final List<String> users;
-
-  UserDetailsWidget({this.users});
-
-  @override
-  Widget build(BuildContext context) => showFuture(
-      CodeforcesAPI().load(users: users),
-      (Data data) => LoadedUserDetailsWidget(data: data, users: users));
-}
-
-class LoadedUserDetailsWidget extends StatefulWidget {
-  final List<String> users;
-  final Data data;
-
-  LoadedUserDetailsWidget({Key key, @required Data data, @required List<String> users})
-      : data = data,
-        users = users,
-        super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => LoadedUserDetailsWidgetState();
-}
-
-class LoadedUserDetailsWidgetState extends State<LoadedUserDetailsWidget> {
   @override
   Widget build(BuildContext context) {
-    final body = TabBarView(children: [
-      UserProblemsOverTimeChart(users: widget.users, data: widget.data),
-      UserProblemsByRatingChart(users: widget.users, data: widget.data)
-    ]);
+    final body = TabBarView(
+        children: [UserProblemsOverTimeChart(), UserProblemsByRatingChart()]);
     return MaterialApp(
         home: DefaultTabController(
             length: 2,
             child: Scaffold(
                 appBar: AppBar(
-                  bottom:
-                      TabBar(tabs: [Tab(text: 'Solved problems over time'), Tab(text: 'Solved problems by rating')]),
-                  title: Text(getTitle()),
+                  bottom: TabBar(tabs: [
+                    Tab(text: 'Solved problems over time'),
+                    Tab(text: 'Solved problems by rating')
+                  ]),
+                  title: withUsers((userData) => Text(_getTitle(userData))),
                 ),
                 body: body)));
   }
 
-  String getTitle() => (widget.users[1] == null)
-      ? 'Codeforces user: ${widget.users[0]}'
-      : 'Codeforces users: ${widget.users[0]} VS ${widget.users[1]}';
+  String _getTitle(BothUsersData userData) {
+    if (!userData.user.isPresent()) {
+      return '';
+    } else if (!userData.vsUser.isPresent()) {
+      return 'Codeforces user: ${userData.user.handle}';
+    } else {
+      return 'Codeforces users: ${userData.user.handle} VS ${userData.vsUser.handle}';
+    }
+  }
 }

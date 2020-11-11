@@ -1,17 +1,19 @@
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:dashforces/data/codeforcesAPI.dart';
+import 'package:dashforces/data/dataProviders.dart';
+import 'package:dashforces/data/userData.dart';
+import 'package:dashforces/model/contestList.dart';
+import 'package:dashforces/ui/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 enum GroupSolvedProblemsBy { day, week, month, year }
 
 class UserProblemsOverTimeChart extends StatefulWidget {
-  final List<String> users;
-  final Data data;
-
-  const UserProblemsOverTimeChart({Key key, this.users, this.data}) : super(key: key);
+  const UserProblemsOverTimeChart({Key key}) : super(key: key);
 
   @override
-  State<UserProblemsOverTimeChart> createState() => UserProblemsOverTimeChartState();
+  State<UserProblemsOverTimeChart> createState() =>
+      UserProblemsOverTimeChartState();
 }
 
 class UserProblemsOverTimeChartState extends State<UserProblemsOverTimeChart> {
@@ -21,13 +23,25 @@ class UserProblemsOverTimeChartState extends State<UserProblemsOverTimeChart> {
   UserProblemsOverTimeChartState();
 
   @override
-  Widget build(BuildContext context) {
-    final userData = _generateUserSeries(widget.users[0], charts.MaterialPalette.blue.shadeDefault);
+  Widget build(BuildContext ctx) =>
+      withUsers((userData) => _show(ctx, userData));
+
+  Widget _show(BuildContext ctx, BothUsersData users) {
+    if (!users.user.isPresent()) {
+      return Text(
+          "Please provide one or two users via 'users' URL query parameter.");
+    }
+
+    final user = users.user;
+    final vsUser = users.vsUser;
+    final userData = _generateUserSeries(ctx, user);
     final vsUserData =
-        widget.users[1] == null ? null : _generateUserSeries(widget.users[1], charts.MaterialPalette.red.shadeDefault);
-    final series = [userData, vsUserData].where((element) => element != null).toList();
+        vsUser.isPresent() ? _generateUserSeries(ctx, vsUser) : null;
+    final series =
+        [userData, vsUserData].where((element) => element != null).toList();
     final chart = _generateChart(series);
-    return Card(child: Column(children: [/*_createHeader(),*/ Expanded(child: chart)]));
+    return Card(
+        child: Column(children: [_createHeader(), Expanded(child: chart)]));
   }
 
   Widget _generateChart(List<charts.Series<SolvedProblems, DateTime>> series) {
@@ -49,20 +63,24 @@ class UserProblemsOverTimeChartState extends State<UserProblemsOverTimeChart> {
     }
   }
 
-  charts.Series<SolvedProblems, DateTime> _generateUserSeries(String user, charts.Color color) {
-    final Map<DateTime, int> solvedByDay = _getUserSolvedByDay(user);
+  charts.Series<SolvedProblems, DateTime> _generateUserSeries(BuildContext ctx,
+      GenericUserData user) {
+    final Map<DateTime, int> solvedByDay = _getUserSolvedByDay(ctx, user);
     return charts.Series<SolvedProblems, DateTime>(
-        id: user,
-        colorFn: (_, __) => color,
+        id: user.handle,
+        colorFn: (_, __) => chartsColorOfMaterial(user.color),
         domainFn: (SolvedProblems problems, _) => problems.date,
         measureFn: (SolvedProblems problems, _) => problems.numSolved,
-        data: solvedByDay.entries.map((entry) => SolvedProblems(entry.key, entry.value)).toList());
+        data: solvedByDay.entries.map((entry) =>
+            SolvedProblems(entry.key, entry.value)).toList());
   }
 
-  Map<DateTime, int> _getUserSolvedByDay(String user) {
-    final submissions = widget.data.userSubmissions[user];
+  Map<DateTime, int> _getUserSolvedByDay(BuildContext ctx,
+      GenericUserData user) {
+    final submissions = user.submissions;
+    final contests = ctx.watch<ContestList>();
     final solvedAt = submissions
-        .getSubmittedProblems(widget.data.contestList)
+        .getSubmittedProblems(contests)
         .map((problem) => submissions.solvedWith(problem))
         .where((solution) => solution != null)
         .map((solution) => solution.time)

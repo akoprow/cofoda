@@ -33,8 +33,7 @@ class ContestListTileWidget extends StatelessWidget {
   }
 
   Future<void> _goToContest(BuildContext context) async {
-    final routeName =
-        AppComponentState.routeSingleContestPrefix + _contest.id.toString();
+    final routeName = App.routeSingleContestPrefix + _contest.id.toString();
     return Navigator.pushNamed(context, routeName);
   }
 

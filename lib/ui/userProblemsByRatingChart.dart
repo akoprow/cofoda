@@ -1,31 +1,36 @@
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:dashforces/data/codeforcesAPI.dart';
+import 'package:dashforces/data/dataProviders.dart';
+import 'package:dashforces/data/userData.dart';
+import 'package:dashforces/model/contestList.dart';
+import 'package:dashforces/ui/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class UserProblemsByRatingChart extends StatefulWidget {
-  final List<String> users;
-  final Data data;
-
-  const UserProblemsByRatingChart({Key key, this.users, this.data}) : super(key: key);
+class UserProblemsByRatingChart extends StatelessWidget {
+  const UserProblemsByRatingChart({Key key}) : super(key: key);
 
   @override
-  State<UserProblemsByRatingChart> createState() => UserProblemsByRatingChartState();
-}
+  Widget build(BuildContext ctx) =>
+      withUsers((userData) => _show(ctx, userData));
 
-class UserProblemsByRatingChartState extends State<UserProblemsByRatingChart> {
-  UserProblemsByRatingChartState();
-
-  @override
-  Widget build(BuildContext context) {
-    final userData = _generateUserSeries(widget.users[0], charts.MaterialPalette.blue.shadeDefault);
-    final vsUserData =
-        widget.users[1] == null ? null : _generateUserSeries(widget.users[1], charts.MaterialPalette.red.shadeDefault);
-    final series = [userData, vsUserData].where((element) => element != null).toList();
+  Widget _show(BuildContext ctx, BothUsersData users) {
+    if (!users.user.isPresent()) {
+      return Text(
+          "Please provide one or two users via 'users' URL query parameter.");
+    }
+    final contests = ctx.watch<ContestList>();
+    final userData = _generateUserSeries(contests, users.user);
+    final vsUserData = users.vsUser.isPresent()
+        ? _generateUserSeries(contests, users.vsUser)
+        : null;
+    final series =
+        [userData, vsUserData].where((element) => element != null).toList();
     final chart = _generateChart(series);
     return Card(child: Column(children: [Expanded(child: chart)]));
   }
 
-  Widget _generateChart(List<charts.Series<MapEntry<int, int>, String>> series) {
+  Widget _generateChart(
+      List<charts.Series<MapEntry<int, int>, String>> series) {
     return charts.BarChart(
       series,
       animate: true,
@@ -34,10 +39,11 @@ class UserProblemsByRatingChartState extends State<UserProblemsByRatingChart> {
     );
   }
 
-  charts.Series<MapEntry<int, int>, String> _generateUserSeries(String user, charts.Color color) {
-    final submissions = widget.data.userSubmissions[user];
+  charts.Series<MapEntry<int, int>, String> _generateUserSeries(
+      ContestList contests, GenericUserData user) {
+    final submissions = user.submissions;
     final solved = submissions
-        .getSubmittedProblems(widget.data.contestList)
+        .getSubmittedProblems(contests)
         .map((problem) =>
             MapEntry(problem.rating, submissions.solvedWith(problem)))
         .where((entry) => entry.key != null && entry.value != null)
@@ -49,8 +55,8 @@ class UserProblemsByRatingChartState extends State<UserProblemsByRatingChart> {
     data.sort((u, v) => u.key.compareTo(v.key));
 
     return charts.Series<MapEntry<int, int>, String>(
-      id: user,
-      colorFn: (_1, _2) => color,
+      id: user.handle,
+      colorFn: (_1, _2) => chartsColorOfMaterial(user.color),
       domainFn: (entry, _) => entry.key.toString(),
       measureFn: (entry, _) => entry.value,
       data: data,
