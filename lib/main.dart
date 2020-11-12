@@ -47,8 +47,7 @@ class App extends StatelessWidget {
   static const String filterParam = 'filter';
 
   static const String routeRoot = '/';
-  static const String routeUserPrefix = '/user/';
-  static const String routeUser = routeUserPrefix + ':user';
+  static const String routeUser = '/user';
   static const String routeProblems = '/problems';
   static const String routeAllContests = '/contests';
   static const String routeSingleContestPrefix = '/contest/';
