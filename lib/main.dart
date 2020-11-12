@@ -1,7 +1,6 @@
 import 'package:dashforces/data/dataProviders.dart';
 import 'package:dashforces/data/userData.dart';
 import 'package:dashforces/ui/contestsListScreen.dart';
-import 'package:dashforces/ui/scaffold.dart';
 import 'package:dashforces/ui/userDetailsWidget.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fluro/fluro.dart' as fluro;
@@ -93,18 +92,15 @@ class App extends StatelessWidget {
         _setUsersFromParams(ctx, params);
         final String ratingLimit = params[ratingLimitParam]?.first;
         final String filter = params[filterParam]?.first;
-        return display(
-            ctx,
-            ContestsListWidget(
-                filter: filter,
-                ratingLimit:
-                    ratingLimit == null ? null : int.parse(ratingLimit)));
+        return ContestsListWidget(
+            filter: filter,
+            ratingLimit: ratingLimit == null ? null : int.parse(ratingLimit));
       });
 
   fluro.Handler _userHandler() => fluro.Handler(
           handlerFunc: (BuildContext ctx, Map<String, List<String>> params) {
         _setUsersFromParams(ctx, params);
-        return display(ctx, UserDetailsWidget());
+        return UserDetailsWidget();
       });
 
   /*

@@ -8,6 +8,7 @@ import 'package:dashforces/model/contestList.dart';
 import 'package:dashforces/model/submissions.dart';
 import 'package:dashforces/ui/contestListTileWidget.dart';
 import 'package:dashforces/ui/problemWidget.dart';
+import 'package:dashforces/ui/scaffold.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -79,32 +80,32 @@ class ContestsListWidget extends StatelessWidget {
       return Container();
     }
     final genStats = (GenericUserData user) =>
-        user.isPresent() ? _computeStatsForUser(contests, user) : null;
+    user.isPresent() ? _computeStatsForUser(contests, user) : null;
     final stats = genStats(user);
     final vsStats = genStats(vsUser);
     final userLabels = vsUser.isPresent()
         ? Row(children: [
-            _userContainer(user),
-            Text(' | '),
-            _userContainer(vsUser)
-          ], mainAxisSize: MainAxisSize.min)
+      _userContainer(user),
+      Text(' | '),
+      _userContainer(vsUser)
+    ], mainAxisSize: MainAxisSize.min)
         : _userContainer(user);
     return ListTile(
         leading: userLabels,
         title: Row(children: _renderStats(stats, vsStats, vsUser.isPresent())));
   }
 
-  static String _statsForStatus(
-      List<ProblemStatus> statuses,
+  static String _statsForStatus(List<ProblemStatus> statuses,
       Map<ProblemStatus, int> stats,
       Map<ProblemStatus, int> vsStats,
       bool secondUser) {
-    final sumFor = (Map<ProblemStatus, int> stats) => (stats == null)
+    final sumFor = (Map<ProblemStatus, int> stats) =>
+    (stats == null)
         ? '?'
         : statuses
-            .map((status) => stats[status] ?? 0)
-            .reduce((a, b) => a + b)
-            .toString();
+        .map((status) => stats[status] ?? 0)
+        .reduce((a, b) => a + b)
+        .toString();
     return secondUser
         ? '${sumFor(stats)} | ${sumFor(vsStats)}'
         : '${sumFor(stats)}';
@@ -114,12 +115,13 @@ class ContestsListWidget extends StatelessWidget {
       Map<ProblemStatus, int> vsStats, bool secondUser) {
     final getStats = (List<ProblemStatus> statuses) =>
         _statsForStatus(statuses, stats, vsStats, secondUser);
-    final Widget Function(ProblemStatus) renderStatus = (status) => Padding(
-        padding: EdgeInsets.only(right: 5),
-        child: Chip(
-          label: Text(getStats([status])),
-          backgroundColor: statusToColor(status),
-        ));
+    final Widget Function(ProblemStatus) renderStatus = (status) =>
+        Padding(
+            padding: EdgeInsets.only(right: 5),
+            child: Chip(
+              label: Text(getStats([status])),
+              backgroundColor: statusToColor(status),
+            ));
     final solvedLive = getStats([ProblemStatus.solvedLive]);
     final solvedVirtual = getStats([ProblemStatus.solvedVirtual]);
     final solvedPractice = getStats([ProblemStatus.solvedPractice]);
@@ -131,22 +133,34 @@ class ContestsListWidget extends StatelessWidget {
     final explanation = Text(
         '($solvedLive + $solvedVirtual + $solvedPractice = $solvedTotal solved)');
     return ProblemStatus.values.reversed
-            .where((status) => status != ProblemStatus.solvedElsewhere)
-            .map(renderStatus)
-            .toList() +
+        .where((status) => status != ProblemStatus.solvedElsewhere)
+        .map(renderStatus)
+        .toList() +
         [explanation];
   }
 
   @override
-  Widget build(BuildContext context) => _show(context.watch<ContestList>());
+  Widget build(BuildContext ctx) {
+    final allContests = ctx.watch<ContestList>();
+    final contests = _filterContests(allContests);
+    return display(
+        ctx, _show(contests, contests),
+        screenTitle: _title(allContests, contests));
+  }
+
+  String _title(ContestList all, ContestList shown) {
+    if (all.contests.length == shown.contests.length) {
+      return 'Displaying all ${shown.contests.length} contests';
+    } else {
+      return 'Displaying ${shown.contests.length}/${all.contests
+          .length} contests';
+    }
+  }
 
   Widget _topBarSliver(ContestList all, ContestList shown) {
-    final summaryText = (all.contests.length == shown.contests.length)
-        ? 'Displaying all ${shown.contests.length} contests'
-        : 'Displaying ${shown.contests.length}/${all.contests.length} contests';
     final stats = withUsers((users) => _generateProblemStats(shown, users));
     final topBar =
-    Card(child: ListTile(title: stats, subtitle: Text(summaryText)));
+    Card(child: ListTile(title: stats));
     return SliverList(
         delegate:
         SliverChildBuilderDelegate((context, i) => topBar, childCount: 1));
@@ -162,11 +176,10 @@ class ContestsListWidget extends StatelessWidget {
         ));
   }
 
-  Widget _show(ContestList allContests) {
+  Widget _show(ContestList allContests, ContestList contests) {
     if (allContests == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    final contests = _filterContests(allContests);
 
     return Scaffold(
         body: CustomScrollView(slivers: [

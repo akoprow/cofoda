@@ -41,7 +41,7 @@ class UserProblemsOverTimeChartState extends State<UserProblemsOverTimeChart> {
         [userData, vsUserData].where((element) => element != null).toList();
     final chart = _generateChart(series);
     return Card(
-        child: Column(children: [_createHeader(), Expanded(child: chart)]));
+        child: Column(children: [/*_createHeader(),*/ Expanded(child: chart)]));
   }
 
   Widget _generateChart(List<charts.Series<SolvedProblems, DateTime>> series) {

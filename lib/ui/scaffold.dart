@@ -3,9 +3,11 @@ import 'package:dashforces/main.dart';
 import 'package:flutter/material.dart';
 
 Widget display(BuildContext ctx, Widget mainWidget,
-    {RouteSettings settings, String screenTitle}) {
+    {RouteSettings settings,
+    String screenTitle,
+    PreferredSizeWidget appBarBottom}) {
   screenTitle ??= 'dashforces';
-  final appBar = AppBar(title: Text(screenTitle));
+  final appBar = AppBar(title: Text(screenTitle), bottom: appBarBottom);
   return Scaffold(appBar: appBar, body: mainWidget, drawer: _Drawer());
 }
 
